@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>engineerReturnTools</title>
+
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        .mainframe
+        {
+            padding:3px;height:1000px;width:70%;
+            margin-left:15%;
+            margin-right:15%;
+        }
+        #pictures
+        {
+            margin: 10px;
+            padding: 10px;
+            height: 60%;
+            width:100%;
+            overflow: scroll;
+            background-color: rgb(210, 219, 211);
+        }
+        .page-header
+        {
+            font-family: Open Sans,sans-serif;
+            color: rgb(92, 65, 61);
+            margin-bottom: 0;
+        }
+        .innerPictures{
+            float: left;
+            display: inline;
+            height:120px;
+            width:200px;
+            margin: 10px auto;
+        }
+        .innerPictures img{
+            display: block;
+        }
+    </style>
+
+    <script>
+        var currentToolID="NULL";
+
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function showCurrentTools(){
+            $(document).ready(function () {
+                $.getJSON("/ToolsInCurrentOrder", function(data){
+                    var numberOfTools = data.Tools.length;
+                    if (numberOfTools == 0)
+                        $("#pictures").append('<p style="font-weight: bold; font-size: 20px">No results found!</p>');
+                    else{
+                        for (var i = 0; i < numberOfTools; i++){
+                            var eleme = $('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
+                                    'id="'+data.Tools[i].ToolID+'" style="cursor: pointer">' +
+                                    '<img src="'+data.Tools[i].Picture+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.Tools[i].Name + '</b></div>');
+                            $("#pictures").append(eleme);
+                        }
+                    }
+                });
+            });
+        }
+
+        function picOnclick(ee) {
+            $(document).ready(function(){
+                if(currentToolID=="NULL")
+                {
+                    currentToolID=ee.id;
+                    $("#"+ee.id).css("border","5px solid red");
+                }
+                else if(currentToolID==ee.id)
+                {
+                    currentToolID="NULL";
+                    $("#"+ee.id).css("border","transparent");
+                }
+                else
+                {
+                    $("#"+currentToolID).css("border","transparent");
+                    currentToolID=ee.id;
+                    $("#"+ee.id).css("border","5px solid red");
+                }
+            });
+        }
+
+        function toolsReturn() {
+            $(document).ready(function () {
+                if(currentToolID=="NULL")
+                {
+                    alert("Please first choose a tool");
+                }
+                else
+                {
+                    var confirmation=confirm("sure to return the tool?");
+                    if(confirmation==true) {
+                        $.ajaxSettings.async = false;//default synchronization
+                        $.getJSON("/EngineerReturnTools", {
+                            ReturnStatus: "Return",
+                            ToolID: currentToolID
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully returned the tool");
+                                //alert(ToolID);//for test
+                                // alert(currentToolID);//for test
+                                $("#"+currentToolID).remove();
+                                //$("#"+currentToolID).remove();
+                                //console.log(currentToolID);//for test//for test
+                                //  alert(currentToolID);//for test
+                                //  alert("You have successfully returned the tool");//for test
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentToolID = "NULL";
+                        $.ajaxSettings.async = true;//asynchronous recovery
+                    }
+                }
+            });
+        }
+
+        function toolsBroken() {
+            $(document).ready(function () {
+                if (currentToolID == "NULL") {
+                    alert("Please first choose a tool");
+                }
+                else {
+                    var confirmation = confirm("The tool is broken?");
+                    if (confirmation == true) {
+                        $.ajaxSettings.async = false;//
+                        $.getJSON("/EngineerReturnTools", {
+                            ReturnStatus: "Broken",
+                            ToolID: currentToolID
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully returned the tool");
+                                $("#"+currentToolID).remove();
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentToolID = "NULL";
+                        $.ajaxSettings.async = true;
+                    }
+                }
+            });
+        }
+
+        function toolsLost() {
+            $(document).ready(function () {
+                if (currentToolID == "NULL") {
+                    alert("Please first choose a tool");
+                }
+                else {
+                    var confirmation = confirm("The tool is lost?");
+                    if (confirmation == true) {
+                        $.ajaxSettings.async = false;
+                        $.getJSON("/EngineerReturnTools", {
+                            ReturnStatus: "Lost",
+                            ToolID: currentToolID,
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully returned the tool");
+                                $("#"+currentToolID).remove();
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentToolID = "NULL";
+                        $.ajaxSettings.async = true;
+                    }
+                }
+            });
+        }
+
+        function backToPersonalCenter(){
+            window.location.href = "/engineerOrderPage";
+        }
+
+        function finishReturningTools(){
+            var confirmation = confirm("Sure to complete this task?");
+            if (confirmation == true){
+                $(document).ready(function(){
+                    $.getJSON("/EngineerFinish", function(data){
+                        if (data.Result == true){
+                            alert("This task has been successfully completed");
+                            history.go(0);
+                        }
+                        else{
+                            alert("Some error occured!");
+                        }
+                    });
+                });
+            }
+        }
+    </script>
+
+</head>
+<body onload="showCurrentTools()">
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-1">
+            <h2 class="page-header"><b>Tools to be returned:</b></h2>
+        </div>
+    </div>
+</div>
+
+<div class="mainframe">
+    <div id="pictures"></div>
+</div>
+
+<div class="container" style="margin-top: -300px">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-lg btn-success btn-block status return" onclick="toolsReturn()">
+                        RETURN
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-lg btn-warning btn-block status broken" onclick="toolsBroken()">
+                        BROKEN
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-lg btn-danger btn-block status lost" onclick="toolsLost()">
+                        LOST
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br /><br /><br />
+    <div class="row">
+        <div class="col-md-2 col-md-offset-1">
+            <button type="button" class="btn btn-primary btn-block back" onclick="backToPersonalCenter()">BACK</button>
+        </div>
+        <div class="col-md-2 col-md-offset-6">
+            <button type="button" class="btn btn-success btn-block back" onclick="finishReturningTools()">FINISH</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

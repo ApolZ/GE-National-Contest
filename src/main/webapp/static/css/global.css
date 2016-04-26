@@ -1,0 +1,34 @@
+body {
+	background-color: #e9eaed;
+}
+.header{
+	position: relative;
+	display: block;
+	height: 60px;
+	width: 100%;
+	padding: 0 20px 0 0;
+	z-index: 800;
+	background-color: #e9eaed;
+	border-bottom: 1px solid rgba(230, 230, 230, 0.7);
+}
+.header a:hover{
+	text-decoration: none;
+}
+a.logo{
+	position: relative;
+	left: 10px;
+	top: 10px;
+}
+.header span {
+	font-family: "Arial Black";
+	font-size: 30px;
+	color: rgb(53,116,185);
+	position: relative;
+	vertical-align: middle;
+}
+.logout{
+	float: right;
+	margin: 14px;
+	font-size: 16px;
+	font-family: Open Sans,sans-serif;
+}

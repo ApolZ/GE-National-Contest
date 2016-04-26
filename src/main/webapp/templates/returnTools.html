@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>returnTools</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <!--a style for basic structure-->
+    <style>
+        .mainframe{padding:3px;height:1000px;width:70%;
+        margin-left:15%;
+            margin-right:15%;}
+        .pictures
+        {
+            margin: 10px;
+            padding: 10px;
+            height: 60%;
+            width:100%;
+            overflow: scroll;
+            /*background-color: rgb(189, 201, 201);*/
+            background-color: rgb(210, 219, 211);
+        <!-- display: none; -->
+        }
+        .sendID{
+            display: inline;}
+        .back{
+            display: inline;}
+        .status{
+            display: inline;}
+        .innerPictures{
+            float: left;
+            display: inline;
+            height:120px;
+            width:200px;
+            margin:10px auto;
+        }
+        .picTest{
+            text-align: center;}
+        .innerPictures img{
+            display: block;}
+        .page-head
+        {
+            font-family: Open Sans,sans-serif;
+            color: rgb(92, 65, 61);
+        }
+    </style>
+
+    <script>
+        var currentToolID="NULL";
+
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function demoReturnInputID()
+        {
+            var IDToBeSent=document.getElementsByClassName("inputID")[0].value;
+            var sendID;
+            if(window.XMLHttpRequest)
+            {//code for IE7+, Firefox, Chrome, Opera, Safari
+                sendID=new XMLHttpRequest();
+            }
+            else
+            {//code for IE6, IE5
+                sendID=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            sendID.onreadystatechange=function ()
+            {
+                if(sendID.readyState==4 && sendID.status==200)
+                {
+                    var response=sendID.responseText;
+                   // var info=sendID.responseText;
+                   var info=JSON.parse(response);
+                 //  console.log(info)//for test
+                    if(info["Error"]=="")
+                    {
+                        var numberOfTools=info.Tools.length;
+                        if(numberOfTools==0){alert("some error occurs in the informaion returned by server!");}
+                        else
+                        {
+                            $(document).ready(function(){
+                               for(var i=0;i<numberOfTools;i++)
+                                 {
+                                  var eleme=$('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
+                                          'id="'+info.Tools[i].ToolID+'"><img src="'+info.Tools[i].Picture+'"' +
+                                          'height="80px" class="center-block"/><b>' + info.Tools[i].Name + '</b></div>');
+                                  $("div.pictures").append(eleme);
+                               }
+                            });
+                        }
+                    }
+                    else{alert("Error:"+info.Error);}
+                }
+            };
+            sendID.open("GET","/scanReturnedTools?inputID="+IDToBeSent,false);
+            sendID.send();
+        }
+
+        function picOnclick(ee) {
+            $(document).ready(function(){
+                if(currentToolID=="NULL")
+                {
+                    currentToolID=ee.id;
+                    $("#"+ee.id).css("border","5px solid red");
+                }
+                else if(currentToolID==ee.id)
+                {
+                    currentToolID="NULL";
+                    $("#"+ee.id).css("border","transparent");
+                }
+                else
+                {
+                    $("#"+currentToolID).css("border","transparent");
+                    currentToolID=ee.id;
+                    $("#"+ee.id).css("border","5px solid red");
+                }
+            });
+        }
+        
+        function toolsReturn() {
+            $(document).ready(function () {
+                if(currentToolID=="NULL")
+                {
+                    alert("Please first choose a tool or scan an ID");
+                }
+                else
+                {
+                    var confirmation=confirm("sure to return the tool?");
+                    if(confirmation==true) {
+                        $.ajaxSettings.async = false;//default synchronization
+                        $.getJSON("/toolsReturn", {
+                            ReturnStatus: "Return",
+                            ToolID: currentToolID
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully returned the tool");
+                                //alert(ToolID);//for test
+                               // alert(currentToolID);//for test
+                                $("#"+currentToolID).remove();
+                                //$("#"+currentToolID).remove();
+                                //console.log(currentToolID);//for test//for test
+                              //  alert(currentToolID);//for test
+                              //  alert("You have successfully returned the tool");//for test
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentToolID = "NULL";
+                        $.ajaxSettings.async = true;//asynchronous recovery
+                    }
+                }
+            });
+        }
+
+        function toolsBroken() {
+            $(document).ready(function () {
+                if (currentToolID == "NULL") {
+                    alert("Please first choose a tool or scan an ID");
+                }
+                else {
+                    var confirmation = confirm("The tool is broken?");
+                    if (confirmation == true) {
+                        var reason = prompt("Please add some remarks: ", "The tool is broken because");
+                        if (reason == null) {
+                            reason = "no remarks was added";
+                        }
+                        $.ajaxSettings.async = false;//
+                        $.getJSON("/toolsReturn", {
+                            ReturnStatus: "Broken",
+                            ToolID: currentToolID,
+                            Remarks: reason
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully returned the tool");
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentToolID = "NULL";
+                        $.ajaxSettings.async = true;
+                    }
+                }
+            });
+        }
+
+        function toolsLost() {
+            $(document).ready(function () {
+                if (currentToolID == "NULL") {
+                    alert("Please first choose a tool or scan an ID");
+                }
+                else {
+                    var confirmation = confirm("The tool is lost?");
+                    if (confirmation == true) {
+                        var reason = prompt("Please add some remarks: ", "The tool is lost because");
+                        if (reason == null) {
+                            reason = "no remarks was added";
+                        }
+                        $.ajaxSettings.async = false;
+                        $.getJSON("/toolsReturn", {
+                            ReturnStatus: "Lost",
+                            ToolID: currentToolID,
+                            Remarks: reason
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully returned the tool");
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentToolID = "NULL";
+                        $.ajaxSettings.async = true;
+                    }
+                }
+            });
+        }
+
+        function backToLeaseOrReturn() {
+            window.location.href="/leaseOrReturn";
+        }
+    </script>
+</head>
+<body>
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-1">
+            <h2 class="page-head"><b>Please scan...</b></h2>
+        </div>
+    </div>
+</div>
+<div class="mainframe">
+    <div class="pictures"></div>
+</div>
+
+<div class="container" style="margin-top: -300px">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="input-group input-group-lg">
+                <input type="text" placeholder="input an ID" aria-label="input an ID(only for demo)"
+                       class="inputID form-control" />
+                <span class="input-group-btn">
+                    <button class="btn btn-info btn-inputID" type="button" onclick="demoReturnInputID()">Input ID</button>
+                </span>
+            </div>
+            <br /><br />
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-lg btn-success btn-block status return" onclick="toolsReturn()">
+                            RETURN
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-lg btn-warning btn-block status broken" onclick="toolsBroken()">
+                            BROKEN
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-lg btn-danger btn-block status lost" onclick="toolsLost()">
+                            LOST
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br /><br /><br />
+    <div class="col-md-2">
+        <button type="button" class="btn btn-primary btn-block back" onclick="backToLeaseOrReturn()">
+            BACK
+        </button>
+    </div>
+</div>
+
+
+</body>
+</html>

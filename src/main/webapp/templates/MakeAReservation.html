@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MakeAReservation</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        .mainframe{padding:3px;height:1000px;width:70%;
+            margin-left:15%;
+            margin-right:15%;}
+        #SearchKey{
+            display: inline;}
+        #SearchClick{
+            display: inline;}
+        .pictures
+        {
+            margin: 10px;
+            padding: 10px;
+            height: 60%;
+            width:100%;
+            overflow: scroll;
+            background-color: rgb(210, 219, 211);
+        }
+        .innerPictures{
+            float: left;
+            display: inline;
+            height:120px;
+            width:200px;
+            margin: 10px auto;
+        }
+        .innerPictures img{
+            display: block;
+        }
+        .input-group-addon{
+            border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0;
+        }
+        .page-header{
+            font-family: Open Sans,sans-serif;
+            text-align: center;
+            color: rgb(92, 65, 61);
+        }
+        #return, #continue{
+            width: 160px;
+        }
+    </style>
+
+    <script>
+        function searchTools() {
+            $(document).ready(function () {
+                var searchKey=$("#SearchKey").val();
+                $.getJSON("/searchTools",{Key:searchKey},function (data) {
+                    if(data.Error=="") {
+                        var numberOfTools = data.Tools.length;
+                        if (numberOfTools == 0) {
+                            alert("some error occurs in the informaion returned by server!");
+                        }
+                        for (var i = 0; i < numberOfTools; i++) {
+                            var eleme=$('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
+                                    'id="'+data.Tools[i].ToolID+'" data-toggle="modal" data-target="#toolDetail" style="cursor: pointer">' +
+                                    '<img src="'+data.Tools[i].Picture+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.Tools[i].Name + '</b></div>');
+                            $("div.pictures").append(eleme);
+                        }
+                    }
+                    else
+                    {
+                        alert("Error:"+data.Error);
+                    }
+                });
+            });
+        }
+
+        function picOnclick(ee) {
+            $("document").ready(function(){
+                var toolID=ee.id;
+                $("#showToolID").text("tool ID: " + toolID);
+                $("#saveToolID").val(toolID);
+                $.getJSON("/accurateDescription", {inputID: toolID}, function(data){
+                    console.log(data);
+                    $("#toolDescription").text(data["Description"]);
+                    $("#toolPic").attr("src", data["Picture"]);
+                });
+            });
+        }
+
+        function backToOrderPage() {
+            window.location.href = "/engineerOrderPage";
+        }
+
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+
+            $("#minusOne").click(function(){
+                var currentQuantity = $("#quantityOfThisTool").val();
+                if (currentQuantity != 0) {
+                    currentQuantity--;
+                    $("#quantityOfThisTool").val(currentQuantity);
+                }
+            });
+
+            $("#plusOne").click(function(){
+                var currentQuantity = $("#quantityOfThisTool").val();
+                currentQuantity++;
+                $("#quantityOfThisTool").val(currentQuantity);
+            });
+
+            $("#leaseOneTool").click(function(){
+                var toolID = $("#saveToolID").val();
+                var quantity = $("#quantityOfThisTool").val();
+                $.post("/confirmReservingTools",
+                        {
+                            inputID: toolID,
+                            Quantity: quantity,
+                        },
+                        function(data){
+                            console.log(data);
+                            if (data["Result"] == true){
+                                $("#leaseOneTool").attr({
+                                    "data-toggle": "modal",
+                                    "data-dismiss": "modal"
+                                });
+                            }
+                            else{
+                                alert("Leasing procedure failed!");
+                                $("#leaseOneTool").removeAttr("data-toggle data-dismiss");
+                            }
+                        });
+            });
+
+            $("#continue").click(function(){
+                var month = $("#month").val();
+                var day = $("#day").val();
+                var year = $("#year").val();
+                if (month == null || month == "" || day == null || day == "" || year == null || year == "")
+                    alert("Please input expected returning date!");
+                else if (month < 1 || month > 12 || day < 0 || day > 31 || year.length != 4)
+                    alert("Invalid date!");
+                else{
+                    if (month.length == 1)
+                        month = "0" + month;
+                    if (day.length == 1)
+                        day = "0" + day;
+                    $.post("/DateForReservation",
+                            {
+                                Date: year + "-" + month + "-" + day
+                            },function (data) {
+                                if(data.Result=="True"){
+                                    var url = "/enrollOtherEngineers";
+                                    $(location).attr("href", url);
+                                }
+                                else{alert("some error occurs")}
+                            });
+
+                }
+            });
+        });
+    </script>
+
+</head>
+<body>
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="mainframe">
+    <h1 class="page-header">Make a reservation for the tools you need!</h1>
+    <br />
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" id="SearchKey" placeholder="Put in a tool name or ID" />
+                <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" id="SearchClick" onclick="searchTools()">SEARCH</button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="pictures"></div>
+    <br />
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="form-group">
+                <label id="dateLabel">The tools are supposed to be returned in</label>
+                <div class="input-group">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="input-group-addon"
+                                 style="border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0px">
+                                Month
+                            </div>
+                            <input type="text" class="form-control" id="month" placeholder="numbers only" />
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group-addon"
+                                 style="border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0px">
+                                Day
+                            </div>
+                            <input type="text" class="form-control" id="day" placeholder="numbers only" />
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group-addon"
+                                 style="border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0px">
+                                Year
+                            </div>
+                            <input type="text" class="form-control" id="year" placeholder="numbers only" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-md-6">
+                    <button class="btn btn-primary btn-lg center-block" id="return" onclick="backToOrderPage()">BACK</button>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-success btn-lg center-block" id="continue">CONTINUE</button>
+                </div>
+            </div>
+            <br /><br />
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="toolDetail" tabindex="-1">
+    <div class="modal-dialog modal-lg" style="width: 60%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+                <h3 class="modal-title" ><span class="label label-default" id="showToolID">Tool ID:</span></h3>
+            </div>
+            <div class="modal-body" style="width: 80%; margin: 0 10%">
+                <div style="max-width:460px; margin:0 auto;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-3" style="position: relative; left: 7%">
+                                <div class="thumbnail">
+                                    <img id="toolPic" src="images/u=3593741896,77901742&fm=21&gp=0.jpg" alt=""
+                                         style="padding: 15px 15px; border-bottom: 1px solid lightgray"/>
+                                    <div class="caption">
+                                        <h5 id="toolDescription" style="text-align: center">Description of this tool</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body" style="margin: 0 10%">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Please select quantity:</label>
+                        <div class="col-md-8">
+                            <div class="col-md-3">
+                                <button class="btn btn-default center-block" id="minusOne">
+                                    <span class="glyphicon glyphicon-minus"></span>
+                                </button>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" class="form-control center-block text-center" id="quantityOfThisTool"
+                                       value=1 autocomplete="on" />
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-default center-block" id="plusOne">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning" data-toggle="modal" data-dismiss="modal" id="cancel">CANCEL</button>
+                <button type="button" class="btn btn-success" id="leaseOneTool">SUBMIT</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" name="field_name" id="saveToolID"/>
+
+</body>
+</html>

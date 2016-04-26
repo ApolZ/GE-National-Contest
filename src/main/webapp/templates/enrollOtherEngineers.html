@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>enrollOtherEngineers</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        .mainframe{padding:3px;height:1000px;width:70%;
+            margin-left:15%;
+            margin-right:15%;}
+        #SearchKey{
+            display: inline;}
+        #SearchClick{
+            display: inline;}
+        .pictures
+        {
+            margin: 10px;
+            padding: 10px;
+            height: 60%;
+            width:100%;
+            overflow: scroll;
+            background-color: rgb(210, 219, 211);
+        }
+        #Enroll{
+            display: inline;}
+        .back{
+            display: inline;}
+        .innerPictures{
+            float: left;
+            display: inline;
+            height:120px;
+            width:200px;
+            margin: 10px auto;
+        }
+        .innerPictures img{
+            display: block;}
+        .page-header{
+            font-family: Open Sans,sans-serif;
+            text-align: center;
+            color: rgb(92, 65, 61);
+        }
+    </style>
+
+    <script>
+        var currentEngineerID="NULL";
+
+        $(document).ready(function() {
+            $("#logout").click(function () {
+                $.get("/logout", function (data) {
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function searchEngineers() {
+            $(document).ready(function () {
+                var searchKey=$("#SearchKey").val();
+                $.getJSON("/otherEngineerSearch",{Name:searchKey},function (data) {
+                    if(data.Error=="") {
+                        var numberOfEngineers = data.Engineers.length;
+                        if (numberOfEngineers == 0) {
+                            alert("No Results!");
+                        }
+                        for (var i = 0; i < numberOfEngineers; i++) {
+                            var eleme = $('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
+                                    'id="'+data.Engineers[i].StaffID+'" style="cursor: pointer">' +
+                                    '<img src="'+data.Engineers[i].Picture+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.Engineers[i].Name + '</b></div>');
+                            $("div.pictures").append(eleme);
+                        }
+                    }
+                    else
+                    {
+                        alert("Error:"+data.Error);
+                    }
+                });
+            });
+        }
+
+        function picOnclick(ee) {
+            $(document).ready(function(){
+                if(currentEngineerID=="NULL")
+                {
+                    currentEngineerID=ee.id;
+                    $("#"+ee.id).css("border","5px solid red");
+                }
+                else if(currentEngineerID==ee.id)
+                {
+                    currentEngineerID="NULL";
+                    $("#"+ee.id).css("border","transparent");
+                }
+                else
+                {
+                    $("#"+currentEngineerID).css("border","transparent");
+                    currentEngineerID=ee.id;
+                    $("#"+ee.id).css("border","5px solid red");
+                }
+            });
+        }
+
+        function confirmEnroll() {
+            $(document).ready(function () {
+                if(currentEngineerID=="NULL")
+                {
+                    alert("Please first choose an engineer or search a name");
+                }
+                else
+                {
+                    var confirmation=confirm("sure to enroll him/her?");
+                    if(confirmation==true) {
+                        $.ajaxSettings.async = false;//default synchronization
+                        $.getJSON("/otherEngineerConfirm", {
+                            EngineerID: currentEngineerID
+                        }, function (returnResult) {
+                            if (returnResult.Result == true) {
+                                alert("You have successfully enrolled him/her");
+                                $("#"+currentEngineerID).remove();
+                            }
+                            else {
+                                alert("Some error occurs");
+                            }
+                        });
+                        currentEngineerID = "NULL";
+                        $.ajaxSettings.async = true;//asynchronous recovery
+                    }
+                }
+            });
+        }
+
+        function backToMakeAReservation() {
+            window.location.href="MakeAReservation.html";
+            //window.location.href="/MakeAReservation";
+        }
+
+        function aheadToExpress() {
+            $.get("/finishEnrollEngineer", function(data, status){
+                var totalValue = data["Value"];
+                if (totalValue == "High"){
+                    $("#getTotalValue").attr("data-target", "#hasToolKeeper");
+                }
+                else if (totalValue == "Low"){
+                    $("#getTotalValue").attr("data-target", "#noToolKeeper");
+                }
+            });
+        }
+
+        $(document).ready(function(){
+            $("#noToolKeeperContinue").click(function(){
+                var choice = $("input:radio[name='expressOrNot']:checked").val();
+                var result;
+                if (choice == null)
+                    alert("Please make a choice!");
+                else{
+                    if (choice == "yes")
+                        result = true;
+                    else if (choice == "no")
+                        result = false;
+                    $.post("/expressInfo", {Result: result}, function(data, status){
+                        console.log(data);
+                        if (data["Result"] == true){
+                            $(location).attr("href", "/engineerPersonalCenter");
+                        }
+                        else{
+                            alert("An error occured!");
+                        }
+                    });
+                }
+            });
+
+            $("#withToolKeeperContinue").click(function(){
+                $(location).attr("href", "/engineerPersonalCenter");
+            });
+        });
+    </script>
+
+</head>
+<body>
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="modal fade" id="noToolKeeper" tabindex="-1">
+    <div class="modal-dialog modal-lg" style="width: 60%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+                <h3 class="modal-title" ><span class="label label-default">Low Value: No Tool Keeper</span></h3>
+            </div>
+            <div class="modal-body" style="width: 80%; margin: 0 10%">
+                <h3 style="color: #2b669a; font-family: Open Sans,sans-serif"><b>Do you need express service?</b></h3>
+                <div style="max-width:500px; margin:0 auto; font-size: 16px;
+                    font-family: Roboto, sans-serif;">
+                    <div class="radio">
+                        <br />
+                        <label>
+                            <input type="radio" name="expressOrNot" value="yes">Yes, I need express service.
+                        </label>
+                        <br /><br />
+                        <label>
+                            <input type="radio" name="expressOrNot" value ="no">No, I will pick up the tools by myself.
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-dismiss="modal">BACK</button>
+                <button type="button" class="btn btn-success" id="noToolKeeperContinue">CONTINUE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="hasToolKeeper" tabindex="-1">
+    <div class="modal-dialog modal-lg" style="width: 60%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+                <h3 class="modal-title" ><span class="label label-default">High Value: Has a Tool Keeper</span></h3>
+            </div>
+            <div class="modal-body" style="width: 80%; margin: 0 10%">
+                <h4 style="color: #2b669a; font-family: Open Sans,sans-serif"><b>NOTICE</b></h4>
+                <div style="max-width:700px; margin:0 auto; font-size: 16px;
+                    font-family: Roboto, sans-serif;">
+                    <p>Since the total value of tools you just picked is relatively high, we will <b>deliver the toolbox
+                    specially</b>.</p>
+                    <p>A <b>delegated tool keeper</b> will travel together with it and take care of daily leasing
+                    and return of the tools on customer site.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-dismiss="modal">BACK</button>
+                <button type="button" class="btn btn-success" id="withToolKeeperContinue">CONTINUE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mainframe">
+    <h1 class="page-header">Enroll other engineers to your group!</h1>
+    <br />
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" id="SearchKey" placeholder="Put in a name of engineer" />
+                <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" id="SearchClick" onclick="searchEngineers()">SEARCH</button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div class="pictures"></div>
+    <br/>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="col-md-4">
+                <button type="button" class="btn btn-lg btn-primary btn-block" onclick="backToMakeAReservation()">
+                    BACK
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-lg btn-info btn-block" id="Enroll" onclick="confirmEnroll()">
+                    ENROLL
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-lg btn-success btn-block finish" onclick="aheadToExpress()"
+                        id="getTotalValue" data-toggle="modal">
+                    FINISH
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

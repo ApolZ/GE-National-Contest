@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>borrowTools</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <!--a style for basic structure-->
+    <style>
+        .picture
+        {
+            margin: 20px;
+            padding: 10px;
+            min-height: 200px;
+            <!-- display: none; -->
+        }
+        .page-head
+        {
+            font-family: Open Sans,sans-serif;
+            color: rgb(92, 65, 61);
+        }
+    </style>
+
+    <!--the scrip to input ID,for demo only-->
+    <script>
+        function demoInputID()
+        {
+            var IDToBeSent=document.getElementsByClassName("inputID")[0].value;
+            var sendID;
+            if(window.XMLHttpRequest)
+            {//code for IE7+, Firefox, Chrome, Opera, Safari
+                sendID=new XMLHttpRequest();
+            }
+            else
+            {//code for IE6, IE5
+                sendID=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            sendID.onreadystatechange=function ()
+            {
+                if(sendID.readyState==4 && sendID.status==200)
+                {
+                    //var resp=JSON.parse(myStatus.responseText);
+                    //var myPos=resp["Position"];
+                    var response=JSON.parse(sendID.responseText);
+                    //var info=JSON.parse(response);
+
+                    var info=response["Error"];
+                   // console.log(info);
+                   // window.alert(info)//for test
+                    if(info==null) {
+                        $(document).ready(function () {
+                            $(".picture img").attr("src", response["Picture"]);
+                            if (response["Position"] != "") {
+                                $(".information").text(response["Position"] + ": " + response["Name"]);
+                            }
+                            else {
+                                $(".information").text(response["Name"]);
+                            }
+                            <!--$(".picture").attr("display","block");-->
+                        });
+                    }
+                    else
+                    {
+                        alert("Error: "+info);
+                    }
+                }
+            };
+            sendID.open("GET","/scanStaffOrTool?inputID="+IDToBeSent,false);
+            sendID.send();
+        }
+    </script>
+
+    <!--the scrip to confirm borrowing tools-->
+    <script>
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function confirmBorrowing()
+        {
+            var confirm;
+            if(window.XMLHttpRequest)
+            {//code for IE7+, Firefox, Chrome, Opera, Safari
+                confirm=new XMLHttpRequest();
+            }
+            else
+            {//code for IE6, IE5
+                confirm=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            confirm.onreadystatechange=function ()
+            {
+                if(confirm.readyState==4 && confirm.status==200)
+                {
+                    var response=confirm.responseText;
+                    var info=JSON.parse(response);
+                    if(info["Result"]==true)
+                    {
+                        //window.alert(info["Result"])//for test
+                        alert("You have successfully borrowed the tools!");
+                        window.location.href="/leaseOrReturn";
+                    }
+                    else
+                    {
+                        alert("Error: "+info.Error());
+                    }
+                }
+            };
+            confirm.open("GET","/confirmBorrowTools",false);
+            confirm.send();
+        }
+    </script>
+
+    <script>
+        function backToLeaseOrReturn() {
+            window.location.href="/leaseOrReturn";
+        }
+    </script>
+</head>
+<body>
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h2 class="page-head"><b>Please scan...</b></h2>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="picture">
+                <img src="../static/images/logo.png" class="center-block" height="250px"
+                     style="padding: 15px 15px; border-bottom: 2px dashed rgb(189,201,201)" />
+                <div class="caption">
+                    <h4 class="information" style="text-align: center">Engineer: xxx / Tool Name</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="input-group input-group-lg">
+                <input type="text" placeholder="Input an ID" aria-label="input an ID(only for demo)"
+                       class="inputID form-control" />
+                <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" onclick="demoInputID()">Input ID</button>
+                </span>
+            </div>
+            <br /><br />
+            <div class="col-md-8 col-md-offset-2">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-lg btn-primary btn-block back" onclick="backToLeaseOrReturn()">
+                            BACK
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-lg btn-success btn-block sendID" onclick="confirmBorrowing()">
+                            CONFIRM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br /><br />
+</div>
+
+</body>
+</html>

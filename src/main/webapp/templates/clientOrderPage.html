@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>clientOrderPage</title>
+
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        .mainFrame{
+            margin-left:20%;
+            margin-right: 20%;
+        }
+        #orderInfo{
+            height: 500px;
+            width:100%;
+            padding:3%;
+            overflow: scroll;
+            border: solid gray 2px;
+            background-color: rgb(210, 219, 211);
+        }
+        .page-header
+        {
+            font-family: Open Sans,sans-serif;
+            color: rgb(92, 65, 61);
+            margin-bottom: 0;
+        }
+    </style>
+    <script>
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function showCurrentOrder() {
+            $(document).ready(function () {
+                $.getJSON("/currentOrder",function (data) {
+                    if(!data.hasOwnProperty("Error"))
+                    {
+                        var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
+                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.OnsiteTime);
+                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.Location);
+                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.Title);
+                        var eleDes=$("<p></p>").text("Problem Description: "+data.Description);
+                        var eleRes=$("<p></p>").text(data.ReservationTime+": You have made your request");
+                        var $Orderinfo=$("#orderInfo");
+                        $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
+
+                        if(data.RequestAcceptTime!="")
+                        {
+                            var eleRqACC=$("<p></p>").text(data.RequestAcceptTime+": Your request has been accepted");
+                            $Orderinfo.append(eleRqACC);
+                        }
+                        else{return;}
+
+                        if(data.EngineerConfirmTime==""){return;}
+                        else
+                        {
+                            var eleEnAcc=$("<p></p>").text(data.EngineerConfirmTime+": Engineers from GE have accepted mission.");
+                            $Orderinfo.append(eleEnAcc);
+                        }
+
+                        if(data.TaskBeginTime==""){return;}
+                        else
+                        {
+                            var eleTkBegin=$("<p></p>").text(data.TaskBeginTime+": On-site task began!");
+                            $Orderinfo.append(eleTkBegin);
+                        }
+
+                        if(data.TaskStatus=="True")
+                        {
+                            var eleEndTime=$("<p></p>").text(data.TaskEndTime+": Engineers have finished their work!");
+                            $Orderinfo.append(eleEndTime);
+                        }
+                        else{return;}
+
+                        if(data.ClientConfirmTime==""){$("#finishConfirm").show();}
+                        else
+                        {
+                            var eleClCon=$("<p></p>").text(data.ClientConfirmTime+": You confirmed that the task had been finished");
+                            $Orderinfo.append(eleClCon);
+                        }
+
+                    }
+                    else{alert("Error: "+data.Error);}
+                });
+            });
+        }
+
+        function confirmFinishService() {
+            $(document).ready(function () {
+                var confirmation=confirm("Are you sure the task has been finished?");
+                if(confirmation=="True")
+                {
+                    $.getJSON("clientConfirmFinish",function (data) {
+                        if(data.Result=="True"){history.go(0);}
+                        else
+                        {alert("some error occurs!");}
+                    });
+                }
+            })
+        }
+
+        function backToClientPersonCenter() {
+            //window.location.href="clientPersonalCenter.html";
+            window.location.href="/clientPersonalCenter";
+        }
+
+    </script>
+
+</head>
+<body onload="showCurrentOrder()">
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="mainFrame">
+    <h2 class="page-header">Service Progress</h2>
+    <div id="orderInfo" class="center-block"></div>
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary btn-lg" style="width: 100px" id="back"
+                    onclick="backToClientPersonCenter()">BACK</button>
+        </div>
+        <div class="col-md-2 col-md-offset-8">
+            <button type="button" class="btn btn-success btn-lg"
+                    style="width: 100px; position: relative; left: 10px; display: none"
+                    id="finishConfirm" onclick="confirmFinishService()">FINISH</button>
+        </div>
+    </div>
+    <br />
+</div>
+
+</body>
+</html>

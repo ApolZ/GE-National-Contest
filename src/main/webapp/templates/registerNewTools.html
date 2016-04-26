@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>registerNewTools</title>
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+
+    <style>
+        .mainframe{padding:3px;height:1000px;width:70%;
+            margin-left:15%;
+            margin-right:15%;}
+        #SearchKey{
+            display: inline;}
+        #SearchClick{
+            display: inline;}
+        .pictures
+        {
+            margin: 10px;
+            padding: 10px;
+            height: 60%;
+            width:100%;
+            overflow: scroll;
+            background-color: white;
+        }
+        .innerPictures{
+            float: left;
+            display: inline;
+            height:210px;
+            width:210px;}
+        .innerPictures img{
+            display: block;}
+        body {
+            background-color: #e9eaed;
+        }
+    </style>
+
+    <script>
+
+
+        function searchTools() {
+            $(document).ready(function () {
+                var searchKey=$("#SearchKey").val();
+                $.getJSON("/searchTools",{Key:searchKey},function (data) {
+                    if(data.Error=="") {
+                        var numberOfTools = data.Engineers.length;
+                        if (numberOfTools == 0) {
+                            alert("some error occurs in the informaion returned by server!");
+                        }
+                        for (var i = 0; i < numberOfTools; i++) {
+                            var eleme = $('<div class="innerPictures" onclick="picOnclick(this)" ' +
+                                    'style="height: 220px;width: 210px;" id="' + data.Tools[i].ToolID + '"' +
+                                    'data-toggle="modal" data-target="#toolDetail"></div>');
+                            var imgs = $('<img style="max-height: 200px; max-width: 200px" src="' + data.Tools[i].Address + '"/>');
+                            eleme.append(imgs);
+                            imgs.after($("<b></b>").text(data.Tools[i].Name));
+                            $("div.pictures").append(eleme);
+                        }
+                    }
+                    else
+                    {
+                        alert("Error:"+data.Error);
+                    }
+                });
+            });
+        }
+
+        function picOnclick(ee) {
+            $("document").ready(function(){
+                var toolID=ee.id;
+                window.location.href="/addNewTools?"+ee.id;
+            });
+        }
+
+        function showToolsOverview() {
+            $(document).ready(function () {
+                $.getJSON("/toolsOverview",function (data) {
+                    $("#totalTools").text(data.TotalNumber);
+                    $("#goodTools").text(data.GoodNumber);
+                    $("#brokenTools").text(data.BrokenNumber);
+                    $("#lostTools").text(data.LostNumber);
+                });
+            });
+        }
+
+        function backToManagerPersonCenter() {
+            // window.location.href="managerPersonalCenter.html";
+            window.location.href="/managerPersonalCenter";
+            //window.location.href="addNewTools.html?"+"1000";
+        }
+    </script>
+</head>
+<body onclick="showToolsOverview()">
+
+<div class="mainframe">
+
+    <p>Search for the tool you want to add!</p>
+    <input type="text" id="SearchKey" placeholder="put in a tool name or ID">
+    <button id="SearchClick" onclick="searchTools()">SEARCH</button>
+    <br/>
+    <div class="pictures"></div>
+    <br/>
+    <button id="newKind">Register New Kind of Tools</button>
+    <button id="back" onclick="backToManagerPersonCenter()">BACK</button>
+
+</div>
+
+</body>
+
+</html>

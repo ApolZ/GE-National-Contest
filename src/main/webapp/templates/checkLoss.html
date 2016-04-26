@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>checkLoss</title>
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        #mainframe{
+            margin-left:20%;
+            margin-right:20%;
+            padding: 30px;}
+        #lossInfo{
+            margin-left: 20px;
+            margin-right:20px;
+            padding: 5px;
+        }
+    </style>
+
+    <script>
+        function checkYearLoss() {
+            var checkYear=$("#checkYear").val();
+            if(!(!isNaN(checkYear)&&(parseInt(checkYear)==checkYear))){alert("please put in a year");}
+            else{
+                $.getJSON("/chenYearLoss",{Year:checkYear},function (data) {
+                    $("#totalLossPieces").text(data.LossPieces);
+                    $("#totalLossValue").text(data.LossValue);
+                    $("#totalBrokenPieces").text(data.BrokenPieces);
+                    $("#totalBrokenValue").text(data.BrokenValue);
+                    $("#totalLostPieces").text(data.LostPieces);
+                    $("#totalLostValue").text(data.LostValue);
+                })
+            }
+        }
+    </script>
+</head>
+<body>
+<div id="mainframe">
+    <label>Please enter a year you want to check: </label>
+    <input id="checkYear" placeholder="please enter a year"/> <br/>
+    <button id="searchYear" onclick="checkYearLoss()">SEARCH</button>
+    <br/>
+    <div id="lossInfo">
+        <label>In this year, </label>
+        <br/>
+        <label>total number of loss:</label>
+        <b id="totalLossPieces"></b>
+        <label> value: </label>
+        <b id="totalLossValue"></b>
+        <br/>
+        <label>total number of broken:</label>
+        <b id="totalBrokenPieces"></b>
+        <label> value: </label>
+        <b id="totalBrokenValue"></b>
+        <br/>
+        <label>total number of Lost:</label>
+        <b id="totalLostPieces"></b>
+        <label> value: </label>
+        <b id="totalLostValue"></b>
+    </div>
+</div>
+</body>
+</html>

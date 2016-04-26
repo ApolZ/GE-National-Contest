@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>newRequests</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        .mainFrame
+        {
+            margin-left: 20%;
+            margin-right: 20%;
+        }
+        #descriptionInput{
+            overflow: scroll;}
+       
+    </style>
+
+    <script>
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function submitRequest() {
+            $(document).ready(function () {
+                //get month
+                var rqMonth=$("#month").val();
+                if(rqMonth.length==1){rqMonth="0"+rqMonth;}
+                else if(rqMonth.length==2){}
+                else
+                {
+                    alert("Please enter the right month");
+                    return;
+                }
+                //get year
+                var rqYear=$("#year").val();
+                if(rqYear.length!=4)
+                {
+                    alert("Please enter the right year");
+                    return;
+                }
+                //get day
+                var rqDay=$("#day").val();
+                if(rqDay.length==1){rqDay="0"+rqDay;}
+                else if(rqDay.length==2){}
+                else
+                {
+                    alert("Please enter the right month");
+                    return;
+                }
+                var rqDate=rqYear+"-"+rqMonth+"-"+rqDay;
+
+                var rqLocation=$("#locationInput").val();
+                var rqTitle=$("#titleInput").val();
+                var rqDescription=$("#descriptionInput").val();
+
+                $.getJSON("/clientReservation",{
+                    Location:rqLocation,
+                    Date:rqDate,
+                    Title:rqTitle,
+                    Description:rqDescription
+                },function (data) {
+                    if(data.Result==true){
+                        alert("You have successfully made a request!");
+                        window.location.href="/clientPersonalCenter";
+                        //window.location.href="/clientPersonCenter";
+                    }
+                    else
+                    {
+                        alert("some error occurs");
+                    }
+                });
+            });
+        }
+
+        function backToClientPersonCenter() {
+            window.location.href="/clientPersonalCenter";
+            //window.location.href="/clientPersonCenter";
+        }
+    </script>
+
+
+</head>
+<body>
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="mainFrame">
+    <h1 class="page-header" style="text-align: center; font-family: Open Sans,sans-serif; color: rgb(92, 65, 61);">
+        Make a new request for post-sale service here
+    </h1>
+    <br/>
+    <div class="row">
+        <div class="col-sm-12">
+            <label id="locationLabel">Please put in your location:</label>
+            <input type="text" id="locationInput" placeholder="your location" class="form-control" tabindex="1"
+                   autofocus="autofocus" /><br />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <label id="titleLabel">The reason you ask for post-sale service:</label>
+            <input type="text" id="titleInput" placeholder="the problem:" class="form-control" tabindex="2"><br />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <label id="descriptionLabel">Please give us some detailed description</label>
+            <textarea id="descriptionInput" rows="15" cols="50" placeholder="we have the problem..."
+                      class="form-control" tabindex="3"></textarea><br />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <label id="dateLabel">Please tell us when do you need the service:</label><br/>
+            <div class="col-md-10 col-md-offset-1">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="input-group-addon"
+                                     style="border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0px">
+                                    Month
+                                </div>
+                                <input type="text" class="form-control" id="month" placeholder="numbers only" />
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group-addon"
+                                     style="border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0px">
+                                    Day
+                                </div>
+                                <input type="text" class="form-control" id="day" placeholder="numbers only" />
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group-addon"
+                                     style="border-right:1px solid #ccc; border-radius: 4px; border-bottom: 0px">
+                                    Year
+                                </div>
+                                <input type="text" class="form-control" id="year" placeholder="numbers only" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br /><br />
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-primary btn-lg center-block" style="width: 130px" id="return" onclick="backToClientPersonCenter()">BACK</button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-success btn-lg center-block" style="width: 130px" id="continue" onclick="submitRequest()">SUBMIT</button>
+                    </div>
+                </div>
+                <br /><br /><br />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+</body>
+</html>

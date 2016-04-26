@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>addNewTools</title>
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        #mainframe{
+            margin-left:20%;
+            margin-right:20%;
+            padding: 30px;}
+        #toolInfo{
+            margin-left: 20px;
+            margin-right:20px;
+            padding: 5px;
+        }
+    </style>
+
+    <script>
+        
+        function loadToolInfo() {
+            $(document).ready(function () {
+                var webInfo=window.location.search;
+                var toolID=webInfo.substr(1);
+                $.getJSON("/loadAddingToolInfo",{inputID:toolID},function (data) {
+                    $("#picture").attr("src",data.Picture);
+                    $("#toolName").attr("placeholder",data.Name);
+                    $("#buyingDate").attr("placeholder",data.PurchaseDate);
+                    $("#serviceLife").attr("placeholder",data.ServiceLife);
+                    $("#description").attr("placeholder",data.Description);
+                    $("#centerID").attr("placeholder",data.ToolcenterID);
+                    $("#minQuant").attr("placeholder",data.MinQuant);
+                    $("#price").attr("placeholder",data.Price);
+                })
+            });
+        }
+        
+        function updateNewTools() {
+            var numbers=$("#newToolNumber").val();
+            if(!(!isNaN(numbers)&&(parseInt(numbers)==numbers))){alert("please put in an integer as the number of new tools");}
+            else
+            {
+                $.getJSON("/creatNewTools",{
+                    Name:$("#toolName").val(),
+                    Picture:$("#picture").val(),
+                    PurchaseDate:$("#buyingDate").val(),
+                    ServiceLife:$("#serviceLife").val(),
+                    Description:$("#description").val(),
+                    ToolcenterID:$("#centerID").val(),
+                    MinQuant:$("#minQuant").val(),
+                    Price:$("#price").val(),
+                    Number:numbers
+                },function (data) {
+                    if(data=="True"){alert("You have successfully added new tools!");}
+                    else{alert("some error occurs");}
+                })
+            }
+        }
+    </script>
+
+
+</head>
+<body onload="loadToolInfo()">
+
+<div id="mainframe">
+    <h2>Add new tools...</h2>
+    <div id="toolInfo">
+        <img id="picture" height="200px" src="a.png"/> <br/>
+        <label>Name: </label> <input type="text" id="toolName"/> <br/>
+        <label>Purchase Date:</label> <input type="text" id="buyingDate"/> <br/>
+        <label>Service Life: </label> <input type="text" id="serviceLife"/> <br/>
+        <label>Description: </label> <input type="text" id="description"/> <br/>
+        <label>Tool Center ID: </label> <input type="text" id="centerID"/> <br/>
+        <label>Minimum Quantity: </label> <input type="text" id="minQuant"/> <br/>
+        <label>Price: </label><input type="text" id="price"/> <br/>
+    </div>
+    <label>Number of new Tools: </label><input type="text" id="newToolNumber" placeholder="1"/><br/>
+    <button id="updateTools" onclick="updateNewTools()">Add New Tool</button>
+</div>
+
+</body>
+</html>

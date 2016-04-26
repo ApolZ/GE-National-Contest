@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>engineerOrderPage</title>
+
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <style>
+        .mainFrame{
+            margin-left:20%;
+            margin-right: 20%;
+        }
+        #orderInfo{
+            height: 500px;
+            width:100%;
+            padding:3%;
+            overflow: scroll;
+            border: solid gray 2px;
+            background-color: rgb(210, 219, 211);
+        }
+        .page-header
+        {
+            font-family: Open Sans,sans-serif;
+            color: rgb(92, 65, 61);
+            margin-bottom: 0;
+        }
+    </style>
+    <script>
+        $(document).ready(function(){
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
+                    if (data["Result"] == true)
+                        window.location.href = "/login";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
+        function showCurrentOrder() {
+            $(document).ready(function () {
+                $.getJSON("/currentOrder",function (data) {
+                    if(!data.hasOwnProperty("Error"))
+                    {
+                        var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
+                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.OnsiteTime);
+                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.Location);
+                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.Title);
+                        var eleDes=$("<p></p>").text("Problem Description: "+data.Description);
+                        var eleRes=$("<p></p>").text(data.ReservationTime+": The client made the request");
+                        var $Orderinfo=$("#orderInfo");
+                        $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
+
+                        if(data.RequestAcceptTime!="")
+                        {
+                            var eleRqACC=$("<p></p>").text(data.RequestAcceptTime+": The request has been accepted by manager");
+                            $Orderinfo.append(eleRqACC);
+                        }
+                        else
+                        {
+                            return;
+                        }
+
+                        if(data.EngineerConfirmTime=="")
+                        {
+                            $("#confirmAcceptTask").show();
+                            return;
+                        }
+                        else
+                        {
+                            var eleEnAcc=$("<p></p>").text(data.EngineerConfirmTime+": You accepted the task.");
+                            $Orderinfo.append(eleEnAcc);
+                        }
+
+                        $("#requestTools").show();
+
+                        if(data.Value==""){return;}
+
+                        if(data.Value=="High") {
+                            if (data.KeeperConfirmTime == "") {
+                                return;
+                            }
+                            else {
+                                var eleKeeAcc = $("<p></p>").text(data.KeeperConfirmTime + ": Toolkeeper has accepted the task.");
+                                $Orderinfo.append(eleKeeAcc);
+                            }
+                        }
+
+                        if(data.TaskBeginTime==""){return;}
+                        else
+                        {
+                            $("#requestTools").hide();
+                            var eleTkBegin=$("<p></p>").text(data.TaskBeginTime+": On-site task began!");
+                            $Orderinfo.append(eleTkBegin);
+                            if(data.Value=="Low") {
+                                $("#returnTools").show();
+                            }
+                        }
+
+                        if(data.TaskStatus=="True")
+                        {
+                            var eleEndTime=$("<p></p>").text(data.TaskEndTime+": You have finished their work!");
+                            $Orderinfo.append(eleEndTime);
+                            $("#returnTools").hide();
+                        }
+                        else{return;}
+
+                        if(data.ClientConfirmTime==""){return;}
+                        else
+                        {
+                            var eleClCon=$("<p></p>").text(data.ClientConfirmTime+": Client confirmed that the task had been finished");
+                            $Orderinfo.append(eleClCon);
+                        }
+
+                        if(data.ManagerConfirmTime==""){}
+                        else
+                        {
+                            var eleManagCon=$("<p></p>").text(data.ManagerConfirmTime+": The manager confirmed that the task had been finished");
+                            $Orderinfo.append(eleManagCon);
+                        }
+
+                    }
+                    else{alert("Error: "+data.Error);}
+                });
+            });
+        }
+
+
+        function engineerConTask() {
+            $(document).ready(function () {
+                var confirmation=confirm("Accept the request?");
+                if(confirmation=="True")
+                {
+                    $.getJSON("engineerConfirmAccept",function (data) {
+                        if(data.Result=="True"){history.go(0);}
+                        else
+                        {alert("some error occurs!");}
+                    });
+                }
+            })
+        }
+        
+        function makeRequestForTools() {
+            window.location.href="MakeAReservation.html";
+            //window.location.href="/MakeAReservation";
+        }
+
+
+        function backToEngineerPersonalCenter() {
+            window.location.href="engineerPersonalCenter.html";
+            //window.location.href="/engineerPersonalCenter";
+        }
+
+        function returnTools(){
+            window.location.href="/engineerReturnTools";
+        }
+
+    </script>
+</head>
+<body onload="showCurrentOrder()">
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="mainFrame">
+    <h2 class="page-header">Service Progress</h2>
+    <div id="orderInfo"></div>
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary btn-lg" id="back" onclick="backToEngineerPersonalCenter()">BACK</button>
+        </div>
+        <button type="button" class="btn btn-success btn-lg" id="returnTools" onclick="returnTools()"
+                style="float: right; margin: auto 10px; width: 150px; display: none;">Return Tools</button>
+        <button type="button" class="btn btn-success btn-lg" id="requestTools" onclick="makeRequestForTools()"
+                style="float: right; margin: auto 10px; width: 150px; display: none">Reserve Tools</button>
+        <button type="button" class="btn btn-info btn-lg" id="confirmAcceptTask" onclick="engineerConTask()"
+                style="float: right; margin: auto 10px; width: 150px; display: none">ACCEPT</button>
+    </div>
+    <br/>
+</div>
+
+</body>
+</html>
