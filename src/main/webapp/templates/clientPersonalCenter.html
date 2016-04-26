@@ -103,10 +103,11 @@
                     }
                     else
                     {
-                        $("#portrait").attr("src",data.Picture);
-                        $("#staffName").append(data.Name);
-                        $("#staffRemarks").append(data.Remarks);
-                        $("#contactInfo").append(data.PhoneNumber);
+                        console.log(data.picture);
+                        $("#portrait").attr("src",data.picture);
+                        $("#staffName").append(data.name);
+                        $("#staffRemarks").append(data.remarks);
+                        $("#contactInfo").append(data.phoneNumber);
                     }
                 })
             });
