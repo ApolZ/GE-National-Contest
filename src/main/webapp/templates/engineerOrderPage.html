@@ -34,8 +34,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -45,20 +45,20 @@
         function showCurrentOrder() {
             $(document).ready(function () {
                 $.getJSON("/currentOrder",function (data) {
-                    if(!data.hasOwnProperty("Error"))
+                    if(data.result=="True")
                     {
                         var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
-                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.OnsiteTime);
-                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.Location);
-                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.Title);
-                        var eleDes=$("<p></p>").text("Problem Description: "+data.Description);
-                        var eleRes=$("<p></p>").text(data.ReservationTime+": The client made the request");
+                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.onsiteTime);
+                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
+                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
+                        var eleDes=$("<p></p>").text("Problem Description: "+data.description);
+                        var eleRes=$("<p></p>").text(data.reservationTime+": You have made your request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
-                        if(data.RequestAcceptTime!="")
+                        if(data.requestAcceptTime)
                         {
-                            var eleRqACC=$("<p></p>").text(data.RequestAcceptTime+": The request has been accepted by manager");
+                            var eleRqACC=$("<p></p>").text(data.requestAcceptTime+": The request has been accepted by manager");
                             $Orderinfo.append(eleRqACC);
                         }
                         else
@@ -66,66 +66,66 @@
                             return;
                         }
 
-                        if(data.EngineerConfirmTime=="")
+                        if(!data.engineerConfirmTime)
                         {
                             $("#confirmAcceptTask").show();
                             return;
                         }
                         else
                         {
-                            var eleEnAcc=$("<p></p>").text(data.EngineerConfirmTime+": You accepted the task.");
+                            var eleEnAcc=$("<p></p>").text(data.engineerConfirmTime+": You accepted the task.");
                             $Orderinfo.append(eleEnAcc);
                         }
 
                         $("#requestTools").show();
 
-                        if(data.Value==""){return;}
+                        if(!data.value){return;}
 
-                        if(data.Value=="High") {
-                            if (data.KeeperConfirmTime == "") {
+                        if(data.value=="High") {
+                            if (data.keeperConfirmTime == "") {
                                 return;
                             }
                             else {
-                                var eleKeeAcc = $("<p></p>").text(data.KeeperConfirmTime + ": Toolkeeper has accepted the task.");
+                                var eleKeeAcc = $("<p></p>").text(data.keeperConfirmTime + ": Toolkeeper has accepted the task.");
                                 $Orderinfo.append(eleKeeAcc);
                             }
                         }
 
-                        if(data.TaskBeginTime==""){return;}
+                        if(!data.taskBeginTime){return;}
                         else
                         {
                             $("#requestTools").hide();
-                            var eleTkBegin=$("<p></p>").text(data.TaskBeginTime+": On-site task began!");
+                            var eleTkBegin=$("<p></p>").text(data.taskBeginTime+": On-site task began!");
                             $Orderinfo.append(eleTkBegin);
-                            if(data.Value=="Low") {
+                            if(data.value=="Low") {
                                 $("#returnTools").show();
                             }
                         }
 
-                        if(data.TaskStatus=="True")
+                        if(data.taskStatus=="True")
                         {
-                            var eleEndTime=$("<p></p>").text(data.TaskEndTime+": You have finished their work!");
+                            var eleEndTime=$("<p></p>").text(data.taskEndTime+": You have finished their work!");
                             $Orderinfo.append(eleEndTime);
                             $("#returnTools").hide();
                         }
                         else{return;}
 
-                        if(data.ClientConfirmTime==""){return;}
+                        if(data.clientConfirmTime==""){return;}
                         else
                         {
-                            var eleClCon=$("<p></p>").text(data.ClientConfirmTime+": Client confirmed that the task had been finished");
+                            var eleClCon=$("<p></p>").text(data.clientConfirmTime+": Client confirmed that the task had been finished");
                             $Orderinfo.append(eleClCon);
                         }
 
-                        if(data.ManagerConfirmTime==""){}
+                        if(!data.managerConfirmTime){}
                         else
                         {
-                            var eleManagCon=$("<p></p>").text(data.ManagerConfirmTime+": The manager confirmed that the task had been finished");
+                            var eleManagCon=$("<p></p>").text(data.managerConfirmTime+": The manager confirmed that the task had been finished");
                             $Orderinfo.append(eleManagCon);
                         }
 
                     }
-                    else{alert("Error: "+data.Error);}
+                    else{alert("Error");}
                 });
             });
         }
@@ -134,10 +134,10 @@
         function engineerConTask() {
             $(document).ready(function () {
                 var confirmation=confirm("Accept the request?");
-                if(confirmation=="True")
+                if(confirmation)
                 {
-                    $.getJSON("engineerConfirmAccept",function (data) {
-                        if(data.Result=="True"){history.go(0);}
+                    $.getJSON("/engineerConfirmAccept",function (data) {
+                        if(data.result=="True"){history.go(0);}
                         else
                         {alert("some error occurs!");}
                     });
@@ -147,7 +147,6 @@
         
         function makeRequestForTools() {
             window.location.href="MakeAReservation.html";
-            //window.location.href="/MakeAReservation";
         }
 
 
@@ -157,7 +156,7 @@
         }
 
         function returnTools(){
-            window.location.href="/engineerReturnTools";
+            window.location.href="engineerReturnTools.html";
         }
 
     </script>

@@ -45,20 +45,20 @@
         function showCurrentOrder() {
             $(document).ready(function () {
                 $.getJSON("/currentOrder",function (data) {
-                    if(!data.hasOwnProperty("Error"))
+                    if(data.result=="True")
                     {
                         var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
-                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.OnsiteTime);
-                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.Location);
-                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.Title);
-                        var eleDes=$("<p></p>").text("Problem Description: "+data.Description);
-                        var eleRes=$("<p></p>").text(data.ReservationTime+": The client made the request");
+                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.onsiteTime);
+                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
+                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
+                        var eleDes=$("<p></p>").text("Problem Description: "+data.description);
+                        var eleRes=$("<p></p>").text(data.reservationTime+": You have made your request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
-                        if(data.RequestAcceptTime!="")
+                        if(data.requestAcceptTime)
                         {
-                            var eleRqACC=$("<p></p>").text(data.RequestAcceptTime+": Your accepted the request");
+                            var eleRqACC=$("<p></p>").text(data.requestAcceptTime+": Your accepted the request");
                             $Orderinfo.append(eleRqACC);
                         }
                         else
@@ -67,20 +67,20 @@
                             return;
                         }
 
-                        if(data.EngineerConfirmTime=="")
+                        if(!data.engineerConfirmTime)
                         {
                             return;
                         }
                         else
                         {
-                            var eleEnAcc=$("<p></p>").text(data.EngineerConfirmTime+": Engineers have accepted the task.");
+                            var eleEnAcc=$("<p></p>").text(data.engineerConfirmTime+": Engineers have accepted the task.");
                             $Orderinfo.append(eleEnAcc);
                         }
 
-                        if(data.Value==""){return;}
+                        if(data.value==""){return;}
                         else
                         {
-                            if(data.Value=="High"){
+                            if(data.value=="High"){
                                 var eleHighVal = $("<p></p>").text("The value of tools reserved by engineer is high! Send a keeper!");
                                 $Orderinfo.append(eleHighVal);
                             }
@@ -91,8 +91,8 @@
                             }
                         }
 
-                        if(data.Value=="High") {
-                            if (data.KeeperConfirmTime=="") {
+                        if(data.value=="High") {
+                            if (!data.keeperConfirmTime) {
                                 return;
                             }
                             else {
@@ -102,37 +102,37 @@
                         }
 
 
-                        if(data.TaskBeginTime==""){return;}
+                        if(!data.taskBeginTime){return;}
                         else
                         {
-                            var eleTkBegin=$("<p></p>").text(data.TaskBeginTime+": On-site task began!");
+                            var eleTkBegin=$("<p></p>").text(data.taskBeginTime+": On-site task began!");
                             $Orderinfo.append(eleTkBegin);
-                            if(data.Value=="High"){$("#onsiteInfo").show();}
+                            if(data.value=="High"){$("#onsiteInfo").show();}
                         }
 
-                        if(data.TaskStatus=="True")
+                        if(data.taskStatus=="True")
                         {
-                            var eleEndTime=$("<p></p>").text(data.TaskEndTime+": Engineers have finished their work!");
+                            var eleEndTime=$("<p></p>").text(data.taskEndTime+": Engineers have finished their work!");
                             $Orderinfo.append(eleEndTime);
                         }
                         else{return;}
 
-                        if(data.ClientConfirmTime==""){return;}
+                        if(!data.clientConfirmTime){return;}
                         else
                         {
-                            var eleClCon=$("<p></p>").text(data.ClientConfirmTime+": Client confirmed that the task had been finished");
+                            var eleClCon=$("<p></p>").text(data.clientConfirmTime+": Client confirmed that the task had been finished");
                             $Orderinfo.append(eleClCon);
                         }
 
-                        if(data.ManagerConfirmTime==""){$("#managerConfirmFinish").show();}
+                        if(data.managerConfirmTime==""){$("#managerConfirmFinish").show();}
                         else
                         {
-                            var eleManagCon=$("<p></p>").text(data.ManagerConfirmTime+": You confirmed that the task had been finished");
+                            var eleManagCon=$("<p></p>").text(data.managerConfirmTime+": You confirmed that the task had been finished");
                             $Orderinfo.append(eleManagCon);
                         }
 
                     }
-                    else{alert("Error: "+data.Error);}
+                    else{alert("Error");}
                 });
             });
         }
@@ -143,7 +143,7 @@
                 if(confirmation==true)
                 {
                     $.getJSON("/managerConfirmFinish",function (data) {
-                        if(data.Result=="True"){history.go(0);}
+                        if(data.result=="True"){history.go(0);}
                         else
                         {alert("some error occurs!");}
                     });
@@ -154,10 +154,11 @@
         function confirmAcceptRequest() {
             $(document).ready(function () {
                 var confirmation=confirm("Accept the request?");
-                if(confirmation=="True")
+                if (confirmation)
                 {
+                    console.log("in if sentence");
                     $.getJSON("/managerConfirmAccept",function (data) {
-                        if(data.Result=="True"){history.go(0);}
+                        if(data.result=="True"){history.go(0);}
                         else
                         {alert("some error occurs!");}
                     });
@@ -166,13 +167,12 @@
         }
 
         function backToManagerPersonCenter() {
-//            window.location.href="managerPersonalCenter.html";
-            window.location.href="/managerPersonalCenter";
+            window.location.href="managerPersonalCenter.html";
         }
 
         function checkDetailedOnsiteInfo() {
             $.getJSON("/onsiteInfoToExcel",function (data) {
-                if(data.Result!="True"){
+                if(data.result!="True"){
                     alert("some error occurs");
                 }
             });

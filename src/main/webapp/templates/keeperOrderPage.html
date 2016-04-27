@@ -53,10 +53,10 @@
                         "data-dismiss": "modal", "data-target": "#boxInfoAndAddress"
                     });
                     $("#showToolboxID").text("toolbox ID: " + boxID);
-                    $.post("ajax/scanBox.py", {ToolboxID: boxID},
+                    $.get("/scanBox", {toolboxID: boxID},
                             function (data, status) {
-                                var toolboxPic = JASON.parse(data)[Picture];
-                                var toolboxModel = JASON.parse(data)[BoxModel];
+                                var toolboxPic = JASON.parse(data)[picture];
+                                var toolboxModel = JASON.parse(data)[boxModel];
                                 $("#boxPic").attr("src", toolboxPic);
                                 $("#boxModel").text(toolboxModel);
                             });
@@ -68,14 +68,14 @@
                 if (onsiteAddress == null || onsiteAddress == "")
                     alert("Please input on-site address!");
                 else{
-                    $.post("ajax/onsiteAddress.py", {Address:onsiteAddress},
+                    $.post("onsiteAddress", {address:onsiteAddress},
                             function(data, status){
-                                var response = JSON.parse(data)["Result"];
+                                var response = JSON.parse(data)["result"];
                                 if (response == "False"){
                                     alert("Session error! Please input the address again.");
                                 }
                                 else{
-                                    window.location.href = "/leaseOrReturn";
+                                    window.location.href = "leaseOrReturn.html";
                                 }
                             });
                 }
@@ -85,20 +85,20 @@
         function showCurrentOrder() {
             $(document).ready(function () {
                 $.getJSON("/currentOrder",function (data) {
-                    if(!data.hasOwnProperty("Error"))
+                    if(data.result=="True")
                     {
                         var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
-                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.OnsiteTime);
-                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.Location);
-                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.Title);
-                        var eleDes=$("<p></p>").text("Problem Description: "+data.Description);
-                        var eleRes=$("<p></p>").text(data.ReservationTime+": The client made the request");
+                        var eleDateTime=$("<p></p>").text("Reservation Time: "+data.onsiteTime);
+                        var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
+                        var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
+                        var eleDes=$("<p></p>").text("Problem Description: "+data.description);
+                        var eleRes=$("<p></p>").text(data.reservationTime+": You have made your request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
-                        if(data.RequestAcceptTime!="")
+                        if(data.requestAcceptTime)
                         {
-                            var eleRqACC=$("<p></p>").text(data.RequestAcceptTime+": The request has been accepted by manager");
+                            var eleRqACC=$("<p></p>").text(data.requestAcceptTime+": The request has been accepted by manager");
                             $Orderinfo.append(eleRqACC);
                         }
                         else
@@ -106,57 +106,57 @@
                             return;
                         }
 
-                        if(data.EngineerConfirmTime=="")
+                        if(!data.engineerConfirmTime)
                         {
                             return;
                         }
                         else
                         {
-                            var eleEnAcc=$("<p></p>").text(data.EngineerConfirmTime+": The engineer accepted the task.");
+                            var eleEnAcc=$("<p></p>").text(data.engineerConfirmTime+": The engineer accepted the task.");
                             $Orderinfo.append(eleEnAcc);
                         }
 
-                        if(data.KeeperConfirmTime=="")
+                        if(!data.keeperConfirmTime)
                         {
                             $("#keeperAcceptTask").show();
                             return;
                         }
                         else
                         {
-                            var eleKeeAcc=$("<p></p>").text(data.KeeperConfirmTime+": You accepted the task.");
+                            var eleKeeAcc=$("<p></p>").text(data.keeperConfirmTime+": You accepted the task.");
                             $Orderinfo.append(eleKeeAcc);
                         }
 
-                        if(data.TaskBeginTime==""){return;}
+                        if(!data.taskBeginTime){return;}
                         else
                         {
-                            var eleTkBegin=$("<p></p>").text(data.TaskBeginTime+": On-site task began!");
+                            var eleTkBegin=$("<p></p>").text(data.taskBeginTime+": On-site task began!");
                             $Orderinfo.append(eleTkBegin);
                         }
 
-                        if(data.TaskStatus=="True")
+                        if(data.taskStatus=="True")
                         {
-                            var eleEndTime=$("<p></p>").text(data.TaskEndTime+": Engineers have finished their work!");
+                            var eleEndTime=$("<p></p>").text(data.taskEndTime+": Engineers have finished their work!");
                             $Orderinfo.append(eleEndTime);
                         }
                         else{return;}
 
-                        if(data.ClientConfirmTime==""){return;}
+                        if(!data.clientConfirmTime){return;}
                         else
                         {
-                            var eleClCon=$("<p></p>").text(data.ClientConfirmTime+": Client confirmed that the task had been finished");
+                            var eleClCon=$("<p></p>").text(data.clientConfirmTime+": Client confirmed that the task had been finished");
                             $Orderinfo.append(eleClCon);
                         }
 
-                        if(data.ManagerConfirmTime==""){}
+                        if(!data.managerConfirmTime){}
                         else
                         {
-                            var eleManagCon=$("<p></p>").text(data.ManagerConfirmTime+": The manager confirmed that the task had been finished");
+                            var eleManagCon=$("<p></p>").text(data.managerConfirmTime+": The manager confirmed that the task had been finished");
                             $Orderinfo.append(eleManagCon);
                         }
 
                     }
-                    else{alert("Error: "+data.Error);}
+                    else{alert("Error");}
                 });
             });
         }
@@ -177,8 +177,7 @@
         }
 
         function backToKeeperPersonalCenter() {
-            //window.location.href="keeperPersonalCenter.html";
-            window.location.href="/keeperPersonalCenter";
+            window.location.href="keeperPersonalCenter.html";
         }
 
     </script>

@@ -13,8 +13,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -22,10 +22,13 @@
 
             $("#keeperFinish").click(function(){
                 var finishOrPause = confirm("Task finished?");
-                $.getJSON("/keeperFinish", {Result: finishOrPause}, function(data){
-                    if (data.Result == true){
+                var whetherComplete;
+                if(finishOrPause){whetherComplete="True";}
+                else{whetherComplete="False";}
+                $.getJSON("/keeperFinish", {result: whetherComplete}, function(data){
+                    if (data.result == "True"){
                         alert("Task finished successfully!");
-                        window.location.href = "/keeperPersonalCenter";
+                        window.location.href = "keeperPersonalCenter.html";
                     }
                     else{
                         alert("Some error occured!");

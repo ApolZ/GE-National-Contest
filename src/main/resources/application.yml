@@ -1,11 +1,12 @@
 server:
   port: 5555
 
-#spring:
-#  datasource:
-#    url: jdbc:mysql://localhost:3306/vocabulary?autoReconnect=true
-#    username: root
-##    password: root2mysql
-##    password: 123456
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ge?autoReconnect=true
+    username: root
+# PC
 #    password: 1234
-#    driverClassName: com.mysql.jdbc.Driver
+# Labotary
+    password: 123456
+    driverClassName: com.mysql.jdbc.Driver

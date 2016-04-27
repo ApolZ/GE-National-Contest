@@ -53,19 +53,19 @@
                    // window.alert(info)//for test
                     if(info==null) {
                         $(document).ready(function () {
-                            $(".picture img").attr("src", response["Picture"]);
-                            if (response["Position"] != "") {
-                                $(".information").text(response["Position"] + ": " + response["Name"]);
+                            $(".picture img").attr("src", response["picture"]);
+                            if (response["position"]) {
+                                $(".information").text(response["position"] + ": " + response["name"]);
                             }
                             else {
-                                $(".information").text(response["Name"]);
+                                $(".information").text(response["name"]);
                             }
                             <!--$(".picture").attr("display","block");-->
                         });
                     }
                     else
                     {
-                        alert("Error: "+info);
+                        alert("Error");
                     }
                 }
             };
@@ -79,8 +79,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -104,15 +104,15 @@
                 {
                     var response=confirm.responseText;
                     var info=JSON.parse(response);
-                    if(info["Result"]==true)
+                    if(info["result"]=="True")
                     {
                         //window.alert(info["Result"])//for test
                         alert("You have successfully borrowed the tools!");
-                        window.location.href="/leaseOrReturn";
+                        window.location.href="leaseOrReturn.html";
                     }
                     else
                     {
-                        alert("Error: "+info.Error());
+                        alert("Error");
                     }
                 }
             };
@@ -123,7 +123,7 @@
 
     <script>
         function backToLeaseOrReturn() {
-            window.location.href="/leaseOrReturn";
+            window.location.href="leaseOrReturn.html";
         }
     </script>
 </head>

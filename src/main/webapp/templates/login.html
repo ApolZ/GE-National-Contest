@@ -29,20 +29,19 @@
                 if(goodOrNot.readyState==4 && goodOrNot.status==200)
                 {
                     var wheGo=goodOrNot.responseText;
-                    var result=JSON.parse(wheGo)["Result"];
-                    var position=JSON.parse(wheGo)["Position"];
-                    window.alert(result)
-                    if(result == false)
+                    var result=JSON.parse(wheGo)["result"];
+                    var position=JSON.parse(wheGo)["position"];
+                    if(result == "False")
                         alert("Wrong user name or password!");
                     else if (result == "True"){
                         if (position == "Client")
                             window.location.href = "clientPersonalCenter.html";
                         else if (position == "Engineer")
-                            window.location.href = "/engineerPersonalCenter";
+                            window.location.href = "engineerPersonalCenter.html";
                         else if (position == "ToolKeeper")
-                            window.location.href = "/toolKeeperPersonalCenter";
+                            window.location.href = "toolKeeperPersonalCenter.html";
                         else if (position == "Manager")
-                            window.location.href = "/managerPersonalCenter";
+                            window.location.href = "managerPersonalCenter.html";
                     }
                 }
             };

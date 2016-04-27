@@ -55,8 +55,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -83,9 +83,9 @@
                    // var info=sendID.responseText;
                    var info=JSON.parse(response);
                  //  console.log(info)//for test
-                    if(info["Error"]=="")
+                    if(info.result=="True")
                     {
-                        var numberOfTools=info.Tools.length;
+                        var numberOfTools=info.tools.length;
                         if(numberOfTools==0){alert("some error occurs in the informaion returned by server!");}
                         else
                         {
@@ -93,14 +93,14 @@
                                for(var i=0;i<numberOfTools;i++)
                                  {
                                   var eleme=$('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
-                                          'id="'+info.Tools[i].ToolID+'"><img src="'+info.Tools[i].Picture+'"' +
-                                          'height="80px" class="center-block"/><b>' + info.Tools[i].Name + '</b></div>');
+                                          'id="'+info.tools[i].toolID+'"><img src="'+info.tools[i].picture+'"' +
+                                          'height="80px" class="center-block"/><b>' + info.tools[i].name + '</b></div>');
                                   $("div.pictures").append(eleme);
                                }
                             });
                         }
                     }
-                    else{alert("Error:"+info.Error);}
+                    else{alert("Error");}
                 }
             };
             sendID.open("GET","/scanReturnedTools?inputID="+IDToBeSent,false);
@@ -140,10 +140,10 @@
                     if(confirmation==true) {
                         $.ajaxSettings.async = false;//default synchronization
                         $.getJSON("/toolsReturn", {
-                            ReturnStatus: "Return",
-                            ToolID: currentToolID
+                            returnStatus: "Return",
+                            toolID: currentToolID
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result == true) {
                                 alert("You have successfully returned the tool");
                                 //alert(ToolID);//for test
                                // alert(currentToolID);//for test
@@ -178,12 +178,13 @@
                         }
                         $.ajaxSettings.async = false;//
                         $.getJSON("/toolsReturn", {
-                            ReturnStatus: "Broken",
-                            ToolID: currentToolID,
-                            Remarks: reason
+                            returnStatus: "Broken",
+                            toolID: currentToolID,
+                            remarks: reason
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result == "True") {
                                 alert("You have successfully returned the tool");
+                                $("#"+currentToolID).remove();
                             }
                             else {
                                 alert("Some error occurs");
@@ -210,12 +211,13 @@
                         }
                         $.ajaxSettings.async = false;
                         $.getJSON("/toolsReturn", {
-                            ReturnStatus: "Lost",
-                            ToolID: currentToolID,
-                            Remarks: reason
+                            returnStatus: "Lost",
+                            toolID: currentToolID,
+                            remarks: reason
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result == "True") {
                                 alert("You have successfully returned the tool");
+                                $("#"+currentToolID).remove();
                             }
                             else {
                                 alert("Some error occurs");
@@ -229,7 +231,7 @@
         }
 
         function backToLeaseOrReturn() {
-            window.location.href="/leaseOrReturn";
+            window.location.href="leaseOrReturn.html";
         }
     </script>
 </head>

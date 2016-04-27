@@ -25,14 +25,14 @@
                 var webInfo=window.location.search;
                 var toolID=webInfo.substr(1);
                 $.getJSON("/loadAddingToolInfo",{inputID:toolID},function (data) {
-                    $("#picture").attr("src",data.Picture);
-                    $("#toolName").attr("placeholder",data.Name);
-                    $("#buyingDate").attr("placeholder",data.PurchaseDate);
-                    $("#serviceLife").attr("placeholder",data.ServiceLife);
-                    $("#description").attr("placeholder",data.Description);
-                    $("#centerID").attr("placeholder",data.ToolcenterID);
-                    $("#minQuant").attr("placeholder",data.MinQuant);
-                    $("#price").attr("placeholder",data.Price);
+                    $("#picture").attr("src",data.picture);
+                    $("#toolName").attr("placeholder",data.name);
+                    $("#buyingDate").attr("placeholder",data.purchaseDate);
+                    $("#serviceLife").attr("placeholder",data.serviceLife);
+                    $("#description").attr("placeholder",data.description);
+                    $("#centerID").attr("placeholder",data.toolcenterID);
+                    $("#minQuant").attr("placeholder",data.minQuant);
+                    $("#price").attr("placeholder",data.price);
                 })
             });
         }
@@ -43,15 +43,15 @@
             else
             {
                 $.getJSON("/creatNewTools",{
-                    Name:$("#toolName").val(),
-                    Picture:$("#picture").val(),
-                    PurchaseDate:$("#buyingDate").val(),
-                    ServiceLife:$("#serviceLife").val(),
-                    Description:$("#description").val(),
-                    ToolcenterID:$("#centerID").val(),
-                    MinQuant:$("#minQuant").val(),
-                    Price:$("#price").val(),
-                    Number:numbers
+                    name:$("#toolName").val(),
+                    picture:$("#picture").val(),
+                    purchaseDate:$("#buyingDate").val(),
+                    serviceLife:$("#serviceLife").val(),
+                    description:$("#description").val(),
+                    toolcenterID:$("#centerID").val(),
+                    minQuant:$("#minQuant").val(),
+                    price:$("#price").val(),
+                    number:numbers
                 },function (data) {
                     if(data=="True"){alert("You have successfully added new tools!");}
                     else{alert("some error occurs");}

@@ -23,13 +23,13 @@
             var checkYear=$("#checkYear").val();
             if(!(!isNaN(checkYear)&&(parseInt(checkYear)==checkYear))){alert("please put in a year");}
             else{
-                $.getJSON("/chenYearLoss",{Year:checkYear},function (data) {
-                    $("#totalLossPieces").text(data.LossPieces);
-                    $("#totalLossValue").text(data.LossValue);
-                    $("#totalBrokenPieces").text(data.BrokenPieces);
-                    $("#totalBrokenValue").text(data.BrokenValue);
-                    $("#totalLostPieces").text(data.LostPieces);
-                    $("#totalLostValue").text(data.LostValue);
+                $.getJSON("/chenYearLoss",{year:checkYear},function (data) {
+                    $("#totalLossPieces").text(data.lossPieces);
+                    $("#totalLossValue").text(data.lossValue);
+                    $("#totalBrokenPieces").text(data.brokenPieces);
+                    $("#totalBrokenValue").text(data.brokenValue);
+                    $("#totalLostPieces").text(data.lostPieces);
+                    $("#totalLostValue").text(data.lostValue);
                 })
             }
         }

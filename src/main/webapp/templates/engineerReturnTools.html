@@ -50,8 +50,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] =="True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -61,15 +61,15 @@
         function showCurrentTools(){
             $(document).ready(function () {
                 $.getJSON("/ToolsInCurrentOrder", function(data){
-                    var numberOfTools = data.Tools.length;
+                    var numberOfTools = data.tools.length;
                     if (numberOfTools == 0)
                         $("#pictures").append('<p style="font-weight: bold; font-size: 20px">No results found!</p>');
                     else{
                         for (var i = 0; i < numberOfTools; i++){
                             var eleme = $('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
-                                    'id="'+data.Tools[i].ToolID+'" style="cursor: pointer">' +
-                                    '<img src="'+data.Tools[i].Picture+'" height="80px" class="center-block"/>' +
-                                    '<b>' + data.Tools[i].Name + '</b></div>');
+                                    'id="'+data.tools[i].toolID+'" style="cursor: pointer">' +
+                                    '<img src="'+data.tools[i].picture+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.tools[i].name + '</b></div>');
                             $("#pictures").append(eleme);
                         }
                     }
@@ -110,10 +110,10 @@
                     if(confirmation==true) {
                         $.ajaxSettings.async = false;//default synchronization
                         $.getJSON("/EngineerReturnTools", {
-                            ReturnStatus: "Return",
-                            ToolID: currentToolID
+                            returnStatus: "Return",
+                            toolID: currentToolID
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result =="True") {
                                 alert("You have successfully returned the tool");
                                 //alert(ToolID);//for test
                                 // alert(currentToolID);//for test
@@ -144,10 +144,10 @@
                     if (confirmation == true) {
                         $.ajaxSettings.async = false;//
                         $.getJSON("/EngineerReturnTools", {
-                            ReturnStatus: "Broken",
-                            ToolID: currentToolID
+                            returnStatus: "Broken",
+                            toolID: currentToolID
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result == "True") {
                                 alert("You have successfully returned the tool");
                                 $("#"+currentToolID).remove();
                             }
@@ -172,10 +172,10 @@
                     if (confirmation == true) {
                         $.ajaxSettings.async = false;
                         $.getJSON("/EngineerReturnTools", {
-                            ReturnStatus: "Lost",
-                            ToolID: currentToolID,
+                            returnStatus: "Lost",
+                            toolID: currentToolID,
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result == "True") {
                                 alert("You have successfully returned the tool");
                                 $("#"+currentToolID).remove();
                             }
@@ -191,7 +191,7 @@
         }
 
         function backToPersonalCenter(){
-            window.location.href = "/engineerOrderPage";
+            window.location.href = "engineerOrderPage.html";
         }
 
         function finishReturningTools(){
@@ -199,7 +199,7 @@
             if (confirmation == true){
                 $(document).ready(function(){
                     $.getJSON("/EngineerFinish", function(data){
-                        if (data.Result == true){
+                        if (data.result == "True"){
                             alert("This task has been successfully completed");
                             history.go(0);
                         }

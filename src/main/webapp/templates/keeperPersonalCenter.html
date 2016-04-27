@@ -41,8 +41,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -56,21 +56,21 @@
                 $("#currentOrders").append(blankLine);
                 $("#currentOrders").append(blankLine);
                 $.getJSON("/orderInformation",function (data) {
-                    if(!data.hasOwnProperty("Error")){
-                        var numOfOrders=data.Orders.length;
+                    if(data.result=="True"){
+                        var numOfOrders=data.orders.length;
                         if(numOfOrders==0){$("#currentOrders").append('<p style="font-weight: bold; font-size: 20px">No results found!</p>');}
                         else {
                             for (var i = 0; i < numOfOrders; i++) {
                                 var eleme = $('<button class="orders btn-link"' +
                                         'style="font-weight: bold; font-size: 16px; margin: 5px 0" onclick="ordersOnclick(this)"' +
-                                        'id="' + data.Orders[i].OrderID + '"></button><br />').text(data.Orders[i].Title);
+                                        'id="' + data.orders[i].orderID + '"></button><br />').text(data.orders[i].title);
                                 $("#currentOrders").append(eleme);
                             }
                         }
                     }
                     else
                     {
-                        alert("Error: "+data.Error);
+                        alert("Error");
                     }
                 });
             });
@@ -78,8 +78,8 @@
 
         function ordersOnclick(ee) {
             $(document).ready(function () {
-                $.getJSON("/chooseOrderID",{OrderID:ee.id},function (data) {
-                    if(data.Result=="True")
+                $.getJSON("/chooseOrderID",{orderID:ee.id},function (data) {
+                    if(data.result=="True")
                     {
                         window.location.href="keeperOrderPage.html";
                         //window.location.href="/orderStatus";
@@ -92,19 +92,19 @@
         function showKeeperPersonalInfo() {
             $(document).ready(function () {
                 $.getJSON("/whoAmI",function (data) {
-                    if(data.hasOwnProperty("Error"))
+                    if(!data.result=="True")
                     {
-                        alert("Error: "+data.Error);
+                        alert("Error");
                     }
                     else
                     {
-                        $("#portrait").attr("src",data.Picture);
-                        $("#staffName").append(data.Name);
-                        $("#staffRemarks").append(data.Remarks);
-                        $("#hireData").append(data.HireDate);
-                        $("#staffid").append(data.StaffID);
-                        $("#staffPosition").append(data.Position);
-                        $("#contactInfo").append(data.PhoneNumber);
+                        $("#portrait").attr("src",data.picture);
+                        $("#staffName").append(data.name);
+                        $("#staffRemarks").append(data.remarks);
+                        $("#hireData").append(data.hireDate);
+                        $("#staffID").append(data.staffID);
+                        $("#staffPosition").append(data.position);
+                        $("#contactInfo").append(data.phoneNumber);
                     }
                 })
             });

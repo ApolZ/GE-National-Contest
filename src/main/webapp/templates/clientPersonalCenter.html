@@ -56,21 +56,22 @@
                 $("#currentOrders").append(blankLine);
                 $("#currentOrders").append(blankLine);
                 $.getJSON("/orderInformation",function (data) {
-                    if(!data.hasOwnProperty("Error")){
-                        var numOfOrders=data.Orders.length;
+                    if(data.result=="True"){
+                        console.log("result is 'True'");
+                        var numOfOrders=data.orders.length;
                         if(numOfOrders==0){$("#currentOrders").append('<p style="font-weight: bold; font-size: 20px">No results found!</p>');}
                         else {
                             for (var i = 0; i < numOfOrders; i++) {
                                 var eleme = $('<button class="orders btn-link"' +
                                         'style="font-weight: bold; font-size: 16px; margin: 5px 0" onclick="ordersOnclick(this)"' +
-                                        'id="' + data.Orders[i].OrderID + '"></button><br />').text(data.Orders[i].Title);
+                                        'id="' + data.orders[i].orderID + '"></button><br />').text(data.orders[i].title);
                                 $("#currentOrders").append(eleme);
                             }
                         }
                     }
                     else
                     {
-                        alert("Error: "+data.Error);
+                        alert("Error");
                     }
                 });
             });
@@ -78,11 +79,10 @@
 
         function ordersOnclick(ee) {
             $(document).ready(function () {
-                $.getJSON("/chooseOrderID",{OrderID:ee.id},function (data) {
-                    if(data.Result==true)
+                $.getJSON("/chooseOrderID",{orderID:ee.id},function (data) {
+                    if(data.result=="True")
                     {
-                        window.location.href="/clientOrderPage";
-                        //window.location.href="clientOrderPage.html";
+                        window.location.href="clientOrderPage.html";
                     }
                     else{alert("some error occurs");}
                 });
@@ -90,20 +90,18 @@
         }
 
         function toNewRequests() {
-            window.location.href="/newRequests";
-            //window.location.href="NewRequests.html";
+            window.location.href="newRequests.html";
         }
         
         function showClientPersonalInfo() {
             $(document).ready(function () {
                 $.getJSON("/whoAmI",function (data) {
-                    if(data.hasOwnProperty("Error"))
+                    if(data.result=="False")
                     {
-                        alert("Error: "+data.Error);
+                        alert("You did not login");
                     }
                     else
                     {
-                        console.log(data.picture);
                         $("#portrait").attr("src",data.picture);
                         $("#staffName").append(data.name);
                         $("#staffRemarks").append(data.remarks);

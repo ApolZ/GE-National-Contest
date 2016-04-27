@@ -54,8 +54,8 @@
         $(document).ready(function() {
             $("#logout").click(function () {
                 $.get("/logout", function (data) {
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -65,23 +65,23 @@
         function searchTools() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
-                $.getJSON("/searchTools",{Key:searchKey},function (data) {
+                $.getJSON("/searchTools",{key:searchKey},function (data) {
                     if(data.Error=="") {
-                        var numberOfTools = data.Engineers.length;
+                        var numberOfTools = data.engineers.length;
                         if (numberOfTools == 0) {
                             alert("some error occurs in the informaion returned by server!");
                         }
                         for (var i = 0; i < numberOfTools; i++) {
                             var eleme=$('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
-                                    'id="'+data.Tools[i].ToolID+'" data-toggle="modal" data-target="#toolDetail" style="cursor: pointer">' +
-                                    '<img src="'+data.Tools[i].Address+'" height="80px" class="center-block"/>' +
-                                    '<b>' + data.Tools[i].Name + '</b></div>');
+                                    'id="'+data.tools[i].toolID+'" data-toggle="modal" data-target="#toolDetail" style="cursor: pointer">' +
+                                    '<img src="'+data.tools[i].qddress+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.tools[i].name + '</b></div>');
                             $("div.pictures").append(eleme);
                         }
                     }
                     else
                     {
-                        alert("Error:"+data.Error);
+                        alert("Error");
                     }
                 });
             });
@@ -92,15 +92,15 @@
                 var toolID=ee.id;
                 $("#showToolID").text("tool ID: " + toolID);
                 $("#saveToolID").val(toolID);
-                $.post("/showDetailedToolStorage", {ToolID: toolID}, function(data, status){
+                $.post("/showDetailedToolStorage", {toolID: toolID}, function(data){
                     console.log(data);
-                    $("#toolDescription").text(data["Description"]);
-                    $("#toolPic").attr("src", data["Picture"]);
-                    $("#toolPrice").text("Price: " + data["Price"]);
-                    $("#toolTotalNumber").text("Total Number: " + data["TotalNumber"]);
-                    $("#toolGoodNumber").text("Good: " + data["GoodNumber"]);
-                    $("#toolBrokenNumber").text("Broken: " + data["BrokenNumber"]);
-                    $("#toolLostNumber").text("Lost: " + data["LostNumber"]);
+                    $("#toolDescription").text(data["description"]);
+                    $("#toolPic").attr("src", data["picture"]);
+                    $("#toolPrice").text("Price: " + data["price"]);
+                    $("#toolTotalNumber").text("Total Number: " + data["totalNumber"]);
+                    $("#toolGoodNumber").text("Good: " + data["goodNumber"]);
+                    $("#toolBrokenNumber").text("Broken: " + data["brokenNumber"]);
+                    $("#toolLostNumber").text("Lost: " + data["lostNumber"]);
                 });
             });
         }
@@ -108,17 +108,17 @@
         function showToolsOverview() {
             $(document).ready(function () {
                 $.getJSON("/toolsOverview",function (data) {
-                    $("#totalTools").text(data.TotalNumber);
-                    $("#goodTools").text(data.GoodNumber);
-                    $("#brokenTools").text(data.BrokenNumber);
-                    $("#lostTools").text(data.LostNumber);
+                    $("#totalTools").text(data.totalNumber);
+                    $("#goodTools").text(data.goodNumber);
+                    $("#brokenTools").text(data.brokenNumber);
+                    $("#lostTools").text(data.lostNumber);
                 });
             });
         }
 
         function backToManagerPersonCenter() {
             // window.location.href="managerPersonalCenter.html";
-            window.location.href="/managerPersonalCenter";
+            window.location.href="managerPersonalCenter.html";
         }
     </script>
 </head>

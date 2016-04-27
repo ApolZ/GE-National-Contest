@@ -52,8 +52,8 @@
         $(document).ready(function() {
             $("#logout").click(function () {
                 $.get("/logout", function (data) {
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -63,23 +63,23 @@
         function searchEngineers() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
-                $.getJSON("/otherEngineerSearch",{Name:searchKey},function (data) {
-                    if(data.Error=="") {
-                        var numberOfEngineers = data.Engineers.length;
+                $.getJSON("/otherEngineerSearch",{name:searchKey},function (data) {
+                    if(data.result=="True") {
+                        var numberOfEngineers = data.engineers.length;
                         if (numberOfEngineers == 0) {
                             alert("No Results!");
                         }
                         for (var i = 0; i < numberOfEngineers; i++) {
                             var eleme = $('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
-                                    'id="'+data.Engineers[i].StaffID+'" style="cursor: pointer">' +
-                                    '<img src="'+data.Engineers[i].Picture+'" height="80px" class="center-block"/>' +
-                                    '<b>' + data.Engineers[i].Name + '</b></div>');
+                                    'id="'+data.engineers[i].staffID+'" style="cursor: pointer">' +
+                                    '<img src="'+data.engineers[i].picture+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.engineers[i].name + '</b></div>');
                             $("div.pictures").append(eleme);
                         }
                     }
                     else
                     {
-                        alert("Error:"+data.Error);
+                        alert("Error");
                     }
                 });
             });
@@ -115,12 +115,12 @@
                 else
                 {
                     var confirmation=confirm("sure to enroll him/her?");
-                    if(confirmation==true) {
+                    if(confirmation) {
                         $.ajaxSettings.async = false;//default synchronization
                         $.getJSON("/otherEngineerConfirm", {
-                            EngineerID: currentEngineerID
+                            engineerID: currentEngineerID
                         }, function (returnResult) {
-                            if (returnResult.Result == true) {
+                            if (returnResult.result == "True") {
                                 alert("You have successfully enrolled him/her");
                                 $("#"+currentEngineerID).remove();
                             }
@@ -141,12 +141,14 @@
         }
 
         function aheadToExpress() {
-            $.get("/finishEnrollEngineer", function(data, status){
-                var totalValue = data["Value"];
+            $.getJSON("/finishEnrollEngineer", function(data){
+                var totalValue = data["value"];
                 if (totalValue == "High"){
+                    console.log("Get total value: High");
                     $("#getTotalValue").attr("data-target", "#hasToolKeeper");
                 }
                 else if (totalValue == "Low"){
+                    console.log("Get total value: Low");
                     $("#getTotalValue").attr("data-target", "#noToolKeeper");
                 }
             });
@@ -160,13 +162,13 @@
                     alert("Please make a choice!");
                 else{
                     if (choice == "yes")
-                        result = true;
+                        result = "True";
                     else if (choice == "no")
-                        result = false;
-                    $.post("/expressInfo", {Result: result}, function(data, status){
+                        result = "False";
+                    $.post("/expressInfo", {result: result}, function(data, status){
                         console.log(data);
-                        if (data["Result"] == true){
-                            $(location).attr("href", "/engineerPersonalCenter");
+                        if (data["result"] == "True"){
+                            $(location).attr("href", "engineerPersonalCenter.html");
                         }
                         else{
                             alert("An error occured!");
@@ -176,7 +178,7 @@
             });
 
             $("#withToolKeeperContinue").click(function(){
-                $(location).attr("href", "/engineerPersonalCenter");
+                $(location).attr("href", "engineerPersonalCenter.html");
             });
         });
     </script>

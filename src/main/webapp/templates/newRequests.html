@@ -66,15 +66,14 @@
                 var rqDescription=$("#descriptionInput").val();
 
                 $.getJSON("/clientReservation",{
-                    Location:rqLocation,
-                    Date:rqDate,
-                    Title:rqTitle,
-                    Description:rqDescription
+                    location:rqLocation,
+                    date:rqDate,
+                    title:rqTitle,
+                    description:rqDescription
                 },function (data) {
-                    if(data.Result==true){
+                    if(data.result=="True"){
                         alert("You have successfully made a request!");
-                        window.location.href="/clientPersonalCenter";
-                        //window.location.href="/clientPersonCenter";
+                        window.location.href="clientPersonalCenter.html";
                     }
                     else
                     {

@@ -42,25 +42,25 @@
         function searchTools() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
-                $.getJSON("/searchTools",{Key:searchKey},function (data) {
-                    if(data.Error=="") {
-                        var numberOfTools = data.Engineers.length;
+                $.getJSON("/searchTools",{key:searchKey},function (data) {
+                    if(data.result=="True") {
+                        var numberOfTools = data.engineers.length;
                         if (numberOfTools == 0) {
                             alert("some error occurs in the informaion returned by server!");
                         }
                         for (var i = 0; i < numberOfTools; i++) {
                             var eleme = $('<div class="innerPictures" onclick="picOnclick(this)" ' +
-                                    'style="height: 220px;width: 210px;" id="' + data.Tools[i].ToolID + '"' +
+                                    'style="height: 220px;width: 210px;" id="' + data.tools[i].toolID + '"' +
                                     'data-toggle="modal" data-target="#toolDetail"></div>');
-                            var imgs = $('<img style="max-height: 200px; max-width: 200px" src="' + data.Tools[i].Address + '"/>');
+                            var imgs = $('<img style="max-height: 200px; max-width: 200px" src="' + data.tools[i].picture + '"/>');
                             eleme.append(imgs);
-                            imgs.after($("<b></b>").text(data.Tools[i].Name));
+                            imgs.after($("<b></b>").text(data.tools[i].name));
                             $("div.pictures").append(eleme);
                         }
                     }
                     else
                     {
-                        alert("Error:"+data.Error);
+                        alert("Error");
                     }
                 });
             });
@@ -76,17 +76,17 @@
         function showToolsOverview() {
             $(document).ready(function () {
                 $.getJSON("/toolsOverview",function (data) {
-                    $("#totalTools").text(data.TotalNumber);
-                    $("#goodTools").text(data.GoodNumber);
-                    $("#brokenTools").text(data.BrokenNumber);
-                    $("#lostTools").text(data.LostNumber);
+                    $("#totalTools").text(data.totalNumber);
+                    $("#goodTools").text(data.goodNumber);
+                    $("#brokenTools").text(data.brokenNumber);
+                    $("#lostTools").text(data.lostNumber);
                 });
             });
         }
 
         function backToManagerPersonCenter() {
             // window.location.href="managerPersonalCenter.html";
-            window.location.href="/managerPersonalCenter";
+            window.location.href="managerPersonalCenter.html";
             //window.location.href="addNewTools.html?"+"1000";
         }
     </script>

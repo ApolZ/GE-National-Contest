@@ -53,23 +53,24 @@
         function searchTools() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
-                $.getJSON("/searchTools",{Key:searchKey},function (data) {
-                    if(data.Error=="") {
-                        var numberOfTools = data.Tools.length;
+                $.getJSON("/searchTools",{key:searchKey},function (data) {
+                    if(data.result=="True") {
+                        $("div.pictures").empty();
+                        var numberOfTools = data.tools.length;
                         if (numberOfTools == 0) {
                             alert("some error occurs in the informaion returned by server!");
                         }
                         for (var i = 0; i < numberOfTools; i++) {
-                            var eleme=$('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
-                                    'id="'+data.Tools[i].ToolID+'" data-toggle="modal" data-target="#toolDetail" style="cursor: pointer">' +
-                                    '<img src="'+data.Tools[i].Picture+'" height="80px" class="center-block"/>' +
-                                    '<b>' + data.Tools[i].Name + '</b></div>');
+                            var eleme=$('<div style="max-height:200px" class="innerPictures text-center" onclick="picOnclick(this)"' +
+                                    'id="'+data.tools[i].toolID+'" data-toggle="modal" data-target="#toolDetail" style="cursor: pointer">' +
+                                    '<img src="'+data.tools[i].picture+'" height="80px" class="center-block"/>' +
+                                    '<b>' + data.tools[i].name + '</b></div>');
                             $("div.pictures").append(eleme);
                         }
                     }
                     else
                     {
-                        alert("Error:"+data.Error);
+                        alert("Error");
                     }
                 });
             });
@@ -82,21 +83,21 @@
                 $("#saveToolID").val(toolID);
                 $.getJSON("/accurateDescription", {inputID: toolID}, function(data){
                     console.log(data);
-                    $("#toolDescription").text(data["Description"]);
-                    $("#toolPic").attr("src", data["Picture"]);
+                    $("#toolDescription").text(data["description"]);
+                    $("#toolPic").attr("src", data["picture"]);
                 });
             });
         }
 
         function backToOrderPage() {
-            window.location.href = "/engineerOrderPage";
+            window.location.href = "engineerOrderPage.html";
         }
 
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -119,18 +120,19 @@
             $("#leaseOneTool").click(function(){
                 var toolID = $("#saveToolID").val();
                 var quantity = $("#quantityOfThisTool").val();
-                $.post("/confirmReservingTools",
+                $.get("/confirmReservingTools",
                         {
-                            inputID: toolID,
-                            Quantity: quantity,
+                            inputID: toolID
+                            //quantity: quantity,
                         },
                         function(data){
                             console.log(data);
-                            if (data["Result"] == true){
-                                $("#leaseOneTool").attr({
+                            if (data["result"] == "True"){
+                                $("#"+toolID).remove();
+                                /* $("#leaseOneTool").attr({
                                     "data-toggle": "modal",
                                     "data-dismiss": "modal"
-                                });
+                                }); */
                             }
                             else{
                                 alert("Leasing procedure failed!");
@@ -152,17 +154,16 @@
                         month = "0" + month;
                     if (day.length == 1)
                         day = "0" + day;
-                    $.post("/DateForReservation",
+                    $.get("/dateForReservation",
                             {
-                                Date: year + "-" + month + "-" + day
+                                date: year + "-" + month + "-" + day
                             },function (data) {
-                                if(data.Result=="True"){
-                                    var url = "/enrollOtherEngineers";
+                                if(data.result=="True"){
+                                    var url = "enrollOtherEngineers.html";
                                     $(location).attr("href", url);
                                 }
                                 else{alert("some error occurs")}
                             });
-
                 }
             });
         });
@@ -253,7 +254,7 @@
                         <div class="row">
                             <div class="col-md-3" style="position: relative; left: 7%">
                                 <div class="thumbnail">
-                                    <img id="toolPic" src="images/u=3593741896,77901742&fm=21&gp=0.jpg" alt=""
+                                    <img id="toolPic" src="../static/images/u=3593741896,77901742&fm=21&gp=0.jpg" alt=""
                                          style="padding: 15px 15px; border-bottom: 1px solid lightgray"/>
                                     <div class="caption">
                                         <h5 id="toolDescription" style="text-align: center">Description of this tool</h5>
@@ -270,16 +271,16 @@
                         <label class="col-md-4 control-label">Please select quantity:</label>
                         <div class="col-md-8">
                             <div class="col-md-3">
-                                <button class="btn btn-default center-block" id="minusOne">
+                                <button class="btn btn-default center-block" id="minusOne" style="display: none;">
                                     <span class="glyphicon glyphicon-minus"></span>
                                 </button>
                             </div>
                             <div class="col-md-5">
                                 <input type="text" class="form-control center-block text-center" id="quantityOfThisTool"
-                                       value=1 autocomplete="on" />
+                                       value=1 autocomplete="on" style="display: none;"/>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-default center-block" id="plusOne">
+                                <button class="btn btn-default center-block" id="plusOne" style="display: none;">
                                     <span class="glyphicon glyphicon-plus"></span>
                                 </button>
                             </div>
