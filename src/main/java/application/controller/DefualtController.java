@@ -540,13 +540,9 @@ public class DefualtController {
         String orderID = (String) session.getAttribute("orderID");
         List<Onsite> onsites = onsiteDao.findByOrderID(orderID);
         try {
-//            response.setContentType("octets/stream");
-//            response.setContentType("application/msexcel");
-//            response.setContentType("application/binary;charset=ISO8859_1");
-//            response.setContentType("multipart/form-data");
             response.reset();
-            response.setHeader("Content-Disposition","attachment;filename=xxx.xsl");
-            response.setContentType("application/vnd.ms-excel;charset=utf-8");
+            response.setContentType("msexcel");
+            response.setHeader("Content-disposition","attachment; filename=test.xls");
             OutputStream out = response.getOutputStream();
             export(onsites, out);
             out.close();
