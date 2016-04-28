@@ -34,8 +34,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -47,12 +47,12 @@
                 $.getJSON("/currentOrder",function (data) {
                     if(data.result=="True")
                     {
-                        var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
+                        var eleID=$("<p></p>").text("Service ID: "+data.orderID);
                         var eleDateTime=$("<p></p>").text("Reservation Time: "+data.onsiteTime);
                         var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
                         var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
                         var eleDes=$("<p></p>").text("Problem Description: "+data.description);
-                        var eleRes=$("<p></p>").text(data.reservationTime+": You have made your request");
+                        var eleRes=$("<p></p>").text(data.reservationTime+": The client has made a request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
@@ -124,7 +124,7 @@
                             $Orderinfo.append(eleClCon);
                         }
 
-                        if(data.managerConfirmTime==""){$("#managerConfirmFinish").show();}
+                        if(!data.managerConfirmTime){$("#managerConfirmFinish").show();}
                         else
                         {
                             var eleManagCon=$("<p></p>").text(data.managerConfirmTime+": You confirmed that the task had been finished");
@@ -174,6 +174,8 @@
             $.getJSON("/onsiteInfoToExcel",function (data) {
                 if(data.result!="True"){
                     alert("some error occurs");
+                } else {
+
                 }
             });
         }

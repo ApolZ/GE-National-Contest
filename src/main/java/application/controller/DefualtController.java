@@ -1,25 +1,22 @@
 package application.controller;
 
-import application.dao.OrderDao;
-import application.dao.StaffDao;
-import application.dao.ToolDao;
+import application.dao.*;
 import application.dto.*;
-import application.entity.Order;
-import application.entity.Staff;
-import application.entity.Tool;
+import application.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
+import application.service.ExportExcel;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
+import static application.service.ExportExcel.export;
 
 /**
  * Created by AZ on 2016/4/26.
@@ -34,10 +31,20 @@ public class DefualtController {
     OrderDao orderDao;
     @Autowired
     ToolDao toolDao;
+    @Autowired
+    ToolboxDao toolboxDao;
+    @Autowired
+    OnsiteDao onsiteDao;
 
     private String sysTime() {
         Date date = new Date();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(date);
+    }
+
+    private String sysDate() {
+        Date date = new Date();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(date);
     }
 
@@ -98,6 +105,7 @@ public class DefualtController {
         return new ResultDto("True");
     }
 
+    /*Get orders for different position*/
     @RequestMapping(value = "/orderInformation", method = RequestMethod.GET)
     public OrderInformationDto orderInformation (String orderID, HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -117,6 +125,11 @@ public class DefualtController {
         }
         if ("Engineer".equals(position)) {
             List<Order> orders = (List<Order>) orderDao.engineerQuery(staffID);
+            orderInformationDto.setOrders(orders);
+            orderInformationDto.setResult("True");
+        }
+        if ("ToolKeeper".equals(position)) {
+            List<Order> orders = (List<Order>) orderDao.toolKeeperQuery(staffID);
             orderInformationDto.setOrders(orders);
             orderInformationDto.setResult("True");
         }
@@ -192,7 +205,10 @@ public class DefualtController {
     /*将该tool加入当前订单*/
     @RequestMapping(value = "/confirmReservingTools", method = RequestMethod.GET)
     public ResultDto confirmReservingTools (String inputID, HttpServletRequest request) {
-        System.out.println("Confirming Resvation");
+        System.out.println("Confirming Reservation");
+        Tool tool = toolDao.findByToolID(inputID);
+        tool.setStatus("OnUsing");
+        toolDao.save(tool);
         HttpSession session = request.getSession();
         String orderID = (String) session.getAttribute("orderID");
         Order order = orderDao.findByOrderID(orderID);
@@ -261,15 +277,286 @@ public class DefualtController {
         String[] toolArray = tools.split("\\|");
         Integer totalAmount = 0;
         for (String str : toolArray) {
-            totalAmount += Integer.parseInt(str);
+            Tool tool = toolDao.findByToolID(str);
+            totalAmount += Integer.parseInt(tool.getPrice());
         }
+        System.out.println("Total amount of this tools is: "+totalAmount);
         if (totalAmount >= 100 ) {
             order.setValue("High");
             orderDao.save(order);
             return "{\"value\":\"High\"}";
         }
         order.setValue("Low");
+        order.setTaskBeginTime(sysTime());
         orderDao.save(order);
         return "{\"value\":\"Low\"}";
+    }
+
+    /*LowValue, write whether to express */
+    @RequestMapping(value = "/expressInfo", method = RequestMethod.GET)
+    public ResultDto expressInfo (HttpServletRequest request, String result) {
+        System.out.println("Executing expressInfo");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        order.setWhetherExpress(result);
+        orderDao.save(order);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/toolsInCurrentOrder", method = RequestMethod.GET)
+    public ToolDto toolsInCurrentOrder (HttpServletRequest request) {
+        System.out.println("Checking tools in current order");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        String tools = order.getToolsReservationID();
+        String[] toolArray = tools.split("\\|");
+        List<Tool> toolList = new ArrayList<Tool>();
+        for (String str : toolArray) {
+            Tool tool = toolDao.findByToolID(str);
+            if ("OnUsing".equals(tool.getStatus())) {
+                toolList.add(tool);
+            }
+        }
+        ToolDto toolDto = new ToolDto();
+        toolDto.setResult("True");
+        toolDto.setTools(toolList);
+        return toolDto;
+    }
+
+    @RequestMapping(value = "/engineerReturnTools", method = RequestMethod.GET)
+    public ResultDto engineerReturnTools (String returnStatus, String toolID) {
+        System.out.println("Executing engineerReturnTools");
+        Tool tool = toolDao.findByToolID(toolID);
+        if ("Lost".equals(returnStatus) || "Broken".equals(returnStatus)) {
+            tool.setBrokenOrLostDate(sysDate());
+        }
+        tool.setStatus(returnStatus);
+        toolDao.save(tool);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/engineerFinish", method = RequestMethod.GET)
+    public ResultDto engineerFinish (HttpServletRequest request) {
+        System.out.println("Executing engineerFinish");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        order.setTaskEndTime(sysTime());
+        order.setTaskStatus("True");
+        orderDao.save(order);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/clientConfirmFinish", method = RequestMethod.GET)
+    public ResultDto clientConfirmFinish (HttpServletRequest request) {
+        System.out.println("Executing clientConfirmFinish");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        order.setClientConfirmTime(sysTime());
+        order.setClientStatus("True");
+        orderDao.save(order);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/managerConfirmFinish", method = RequestMethod.GET)
+    public ResultDto managerConfirmFinish (HttpServletRequest request) {
+        System.out.println("Executing managerConfirmFinish");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        order.setManagerConfirmTime(sysTime());
+        order.setManagerStatus("True");
+        orderDao.save(order);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/keeperConfirmAccept", method = RequestMethod.GET)
+    public ResultDto keeperConfirmAccept (HttpServletRequest request) {
+        System.out.println("Executing keeperConfirmAccept");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        String staffID = (String) session.getAttribute("StaffID");
+        Order order = orderDao.findByOrderID(orderID);
+        order.setKeeperConfirmTime(sysTime());
+        order.setToolkeeperID(staffID);
+        orderDao.save(order);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/scanBox", method = RequestMethod.GET)
+    public Toolbox scanBox (String toolboxID, HttpServletRequest request) {
+        System.out.println("Scanning toolbox");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        if (order.getTaskBeginTime()==null) {
+            order.setTaskBeginTime(sysTime());
+            orderDao.save(order);
+        }
+        session.setAttribute("toolboxID",toolboxID);
+        Toolbox toolbox = toolboxDao.findByToolboxID(toolboxID);
+        return toolbox;
+    }
+
+    @RequestMapping(value = "/onsiteAddress", method = RequestMethod.GET)
+    public ResultDto onsiteAddress (String address, HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        session.setAttribute("address", address);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/scanStaffOrTool", method = RequestMethod.GET)
+    public ScanDto scanStaffOrTool (String inputID, HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        ScanDto scanDto = new ScanDto();
+
+        Staff staff = staffDao.findByStaffID(inputID);
+        if (staff != null) {
+            System.out.println("Got an engineer. Writing scanEngineer into session");
+            session.setAttribute("scanEngineer", inputID);
+            scanDto.setResult("True");
+            scanDto.setName(staff.getName());
+            scanDto.setPicture(staff.getPicture());
+            scanDto.setPosition(staff.getPosition());
+            return scanDto;
+        }
+
+        Tool tool = toolDao.findByToolID(inputID);
+        if (tool != null) {
+            System.out.println("Got a tool. Writing scanTools into session");
+            String scanTools = (String) session.getAttribute("scanTools");
+            if (scanTools == null) {
+                session.setAttribute("scanTools", inputID);
+            } else {
+                scanTools += "|";
+                scanTools += inputID;
+                session.setAttribute("scanTools", scanTools);
+            }
+            scanDto.setResult("True");
+            scanDto.setPicture(tool.getPicture());
+            scanDto.setName(tool.getName());
+            return scanDto;
+        }
+            scanDto.setResult("False");
+            return scanDto;
+    }
+
+    @RequestMapping(value = "/confirmBorrowTools", method = RequestMethod.GET)
+    public ResultDto confirmBorrowTools (HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        String scanEngineer = (String) session.getAttribute("scanEngineer");
+        String staffID = (String) session.getAttribute("StaffID");
+        String orderID = (String) session.getAttribute("orderID");
+        String toolboxID = (String) session.getAttribute("toolboxID");
+        String address = (String) session.getAttribute("address");
+
+        String scanTools = (String) session.getAttribute("scanTools");
+        try {
+            String[] tools = scanTools.split("\\|");
+            for (String str: tools) {
+                Onsite onsite = new Onsite();
+                onsite.setEngineerID(scanEngineer);
+                onsite.setToolkeeperID(staffID);
+                onsite.setOrderID(orderID);
+                onsite.setToolboxID(toolboxID);
+                onsite.setAddress(address);
+                onsite.setLendingTime(sysTime());
+                onsite.setToolID(str);
+                onsiteDao.save(onsite);
+            }
+            return new ResultDto("True");
+        } catch (Exception e) {
+            return new ResultDto("False");
+        }
+    }
+
+    @RequestMapping(value = "/scanReturnedTools", method = RequestMethod.GET)
+    public ToolDto scanReturnedTools (String inputID) {
+        System.out.println("Scanning returned toolID or staffID");
+        ToolDto toolDto = new ToolDto();
+
+        Tool tool = toolDao.findByToolID(inputID);
+        if (tool != null) {
+            System.out.println("Got a tool");
+            List<Tool> toolList = new ArrayList<Tool>();
+            toolList.add(tool);
+            toolDto.setResult("True");
+            toolDto.setTools(toolList);
+            return toolDto;
+        }
+
+        Staff staff = staffDao.findByStaffID(inputID);
+        if (staff != null) {
+            System.out.println("Got an engineer");
+            List<Tool> toolList = new ArrayList<Tool>();
+            List<Onsite> onsiteList = onsiteDao.findByEngineerID(inputID);
+            for (Onsite onsite: onsiteList) {
+                if (onsite.getReturnTime()==null) {
+                    Tool eachTool = toolDao.findByToolID(onsite.getToolID());
+                    toolList.add(eachTool);
+                }
+            }
+            toolDto.setResult("True");
+            toolDto.setTools(toolList);
+            return toolDto;
+        }
+
+        toolDto.setResult("False");
+        return toolDto;
+    }
+
+    @RequestMapping(value = "/toolsReturn", method = RequestMethod.GET)
+    public ResultDto toolsReturn (String returnStatus, String toolID, String remarks) {
+        Onsite onsite = onsiteDao.unreturnedRowByToolID(toolID);
+        if (! "Return".equals(returnStatus)) {
+            remarks = remarks.replace('+',' ');
+            onsite.setRemarks(remarks);
+        }
+        onsite.setReturnStatus(returnStatus);
+        onsite.setReturnTime(sysTime());
+        onsiteDao.save(onsite);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/keeperFinish", method = RequestMethod.GET)
+    public ResultDto keeperFinish (String result, HttpServletRequest request) {
+        System.out.println("Executing keeperFinish");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        Order order = orderDao.findByOrderID(orderID);
+        order.setTaskEndTime(sysTime());
+        order.setTaskStatus(result);
+        orderDao.save(order);
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/onsiteInfoToExcel", method = RequestMethod.GET)
+    public void exportExcel (HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("Exporting excel file");
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        List<Onsite> onsites = onsiteDao.findByOrderID(orderID);
+        try {
+//            response.setContentType("octets/stream");
+//            response.setContentType("application/msexcel");
+//            response.setContentType("application/binary;charset=ISO8859_1");
+//            response.setContentType("multipart/form-data");
+            response.reset();
+            response.setHeader("Content-Disposition","attachment;filename=xxx.xsl");
+            response.setContentType("application/vnd.ms-excel;charset=utf-8");
+            OutputStream out = response.getOutputStream();
+            export(onsites, out);
+            out.close();
+        } catch (Exception e) {}
+    }
+
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public ResultDto logout (HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        session.invalidate();
+        return new ResultDto("True");
     }
 }

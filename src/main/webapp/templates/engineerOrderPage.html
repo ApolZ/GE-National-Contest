@@ -52,7 +52,7 @@
                         var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
                         var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
                         var eleDes=$("<p></p>").text("Problem Description: "+data.description);
-                        var eleRes=$("<p></p>").text(data.reservationTime+": You have made your request");
+                        var eleRes=$("<p></p>").text(data.reservationTime+": The client has made a request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
@@ -110,7 +110,7 @@
                         }
                         else{return;}
 
-                        if(data.clientConfirmTime==""){return;}
+                        if(!data.clientConfirmTime){return;}
                         else
                         {
                             var eleClCon=$("<p></p>").text(data.clientConfirmTime+": Client confirmed that the task had been finished");

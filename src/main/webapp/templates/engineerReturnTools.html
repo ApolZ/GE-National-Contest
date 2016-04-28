@@ -50,7 +50,7 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["result"] =="True")
+                    if (data["result"] == "True")
                         window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
@@ -60,7 +60,7 @@
 
         function showCurrentTools(){
             $(document).ready(function () {
-                $.getJSON("/ToolsInCurrentOrder", function(data){
+                $.getJSON("/toolsInCurrentOrder", function(data){
                     var numberOfTools = data.tools.length;
                     if (numberOfTools == 0)
                         $("#pictures").append('<p style="font-weight: bold; font-size: 20px">No results found!</p>');
@@ -109,7 +109,7 @@
                     var confirmation=confirm("sure to return the tool?");
                     if(confirmation==true) {
                         $.ajaxSettings.async = false;//default synchronization
-                        $.getJSON("/EngineerReturnTools", {
+                        $.getJSON("/engineerReturnTools", {
                             returnStatus: "Return",
                             toolID: currentToolID
                         }, function (returnResult) {
@@ -143,7 +143,7 @@
                     var confirmation = confirm("The tool is broken?");
                     if (confirmation == true) {
                         $.ajaxSettings.async = false;//
-                        $.getJSON("/EngineerReturnTools", {
+                        $.getJSON("/engineerReturnTools", {
                             returnStatus: "Broken",
                             toolID: currentToolID
                         }, function (returnResult) {
@@ -171,7 +171,7 @@
                     var confirmation = confirm("The tool is lost?");
                     if (confirmation == true) {
                         $.ajaxSettings.async = false;
-                        $.getJSON("/EngineerReturnTools", {
+                        $.getJSON("/engineerReturnTools", {
                             returnStatus: "Lost",
                             toolID: currentToolID,
                         }, function (returnResult) {
@@ -198,7 +198,7 @@
             var confirmation = confirm("Sure to complete this task?");
             if (confirmation == true){
                 $(document).ready(function(){
-                    $.getJSON("/EngineerFinish", function(data){
+                    $.getJSON("/engineerFinish", function(data){
                         if (data.result == "True"){
                             alert("This task has been successfully completed");
                             history.go(0);

@@ -58,7 +58,7 @@
 
                         if(data.requestAcceptTime)
                         {
-                            var eleRqACC=$("<p></p>").text(data.RequestAcceptTime+": Your request has been accepted");
+                            var eleRqACC=$("<p></p>").text(data.requestAcceptTime+": Your request has been accepted");
                             $Orderinfo.append(eleRqACC);
                         }
                         else{return;}
@@ -79,7 +79,7 @@
 
                         if(data.taskStatus=="True")
                         {
-                            var eleEndTime=$("<p></p>").text(data.TaskEndTime+": Engineers have finished their work!");
+                            var eleEndTime=$("<p></p>").text(data.taskEndTime+": Engineers have finished their work!");
                             $Orderinfo.append(eleEndTime);
                         }
                         else{return;}
@@ -100,9 +100,9 @@
         function confirmFinishService() {
             $(document).ready(function () {
                 var confirmation=confirm("Are you sure the task has been finished?");
-                if(confirmation=="True")
+                if(confirmation)
                 {
-                    $.getJSON("clientConfirmFinish",function (data) {
+                    $.getJSON("/clientConfirmFinish",function (data) {
                         if(data.result=="True"){history.go(0);}
                         else
                         {alert("some error occurs!");}

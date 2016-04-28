@@ -33,8 +33,8 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["Result"] == true)
-                        window.location.href = "/login";
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
                 });
@@ -55,8 +55,8 @@
                     $("#showToolboxID").text("toolbox ID: " + boxID);
                     $.get("/scanBox", {toolboxID: boxID},
                             function (data, status) {
-                                var toolboxPic = JASON.parse(data)[picture];
-                                var toolboxModel = JASON.parse(data)[boxModel];
+                                var toolboxPic = data.picture;
+                                var toolboxModel = data.boxModel;
                                 $("#boxPic").attr("src", toolboxPic);
                                 $("#boxModel").text(toolboxModel);
                             });
@@ -68,9 +68,9 @@
                 if (onsiteAddress == null || onsiteAddress == "")
                     alert("Please input on-site address!");
                 else{
-                    $.post("onsiteAddress", {address:onsiteAddress},
+                    $.get("/onsiteAddress", {address:onsiteAddress},
                             function(data, status){
-                                var response = JSON.parse(data)["result"];
+                                var response = data.result;
                                 if (response == "False"){
                                     alert("Session error! Please input the address again.");
                                 }
@@ -87,12 +87,12 @@
                 $.getJSON("/currentOrder",function (data) {
                     if(data.result=="True")
                     {
-                        var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
+                        var eleID=$("<p></p>").text("Service ID: "+data.orderID);
                         var eleDateTime=$("<p></p>").text("Reservation Time: "+data.onsiteTime);
                         var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
                         var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
                         var eleDes=$("<p></p>").text("Problem Description: "+data.description);
-                        var eleRes=$("<p></p>").text(data.reservationTime+": You have made your request");
+                        var eleRes=$("<p></p>").text(data.reservationTime+": The client has made a request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
@@ -127,6 +127,8 @@
                             $Orderinfo.append(eleKeeAcc);
                         }
 
+                        $("#onsite").show();
+
                         if(!data.taskBeginTime){return;}
                         else
                         {
@@ -138,6 +140,7 @@
                         {
                             var eleEndTime=$("<p></p>").text(data.taskEndTime+": Engineers have finished their work!");
                             $Orderinfo.append(eleEndTime);
+                            $("#onsite").hide();
                         }
                         else{return;}
 
@@ -165,10 +168,10 @@
         function keeperConTask() {
             $(document).ready(function () {
                 var confirmation=confirm("Accept the request?");
-                if(confirmation=="True")
+                if(confirmation)
                 {
-                    $.getJSON("keeperConfirmAccept",function (data) {
-                        if(data.Result=="True"){history.go(0);}
+                    $.getJSON("/keeperConfirmAccept",function (data) {
+                        if(data.result=="True"){history.go(0);}
                         else
                         {alert("some error occurs!");}
                     });
@@ -200,7 +203,7 @@
             <button type="button" class="btn btn-primary btn-lg" id="back" onclick="backToKeeperPersonalCenter()">BACK</button>
         </div>
         <button type="button" class="btn btn-success btn-lg" id="onsite" data-toggle="modal"
-                data-target="#scanToolbox" style="float: right; margin: auto 10px; width: 100px">ONSITE</button>
+                data-target="#scanToolbox" style="float: right; margin: auto 10px; width: 100px; display: none;">ONSITE</button>
         <button type="button" class="btn btn-info btn-lg" id="keeperAcceptTask" onclick="keeperConTask()"
                 style="float: right; margin: auto 10px; width: 100px; display: none">ACCEPT</button>
     </div>

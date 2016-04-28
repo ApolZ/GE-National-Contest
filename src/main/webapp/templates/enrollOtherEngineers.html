@@ -50,8 +50,8 @@
         var currentEngineerID="NULL";
 
         $(document).ready(function() {
-            $("#logout").click(function () {
-                $.get("/logout", function (data) {
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
                     if (data["result"] == "True")
                         window.location.href = "login.html";
                     else
@@ -141,6 +141,7 @@
         }
 
         function aheadToExpress() {
+            $.ajaxSettings.async = false;//default synchronization
             $.getJSON("/finishEnrollEngineer", function(data){
                 var totalValue = data["value"];
                 if (totalValue == "High"){
@@ -165,7 +166,7 @@
                         result = "True";
                     else if (choice == "no")
                         result = "False";
-                    $.post("/expressInfo", {result: result}, function(data, status){
+                    $.get("/expressInfo", {result: result}, function(data, status){
                         console.log(data);
                         if (data["result"] == "True"){
                             $(location).attr("href", "engineerPersonalCenter.html");

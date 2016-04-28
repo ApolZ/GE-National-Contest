@@ -52,8 +52,8 @@
 
     <script>
         $(document).ready(function() {
-            $("#logout").click(function () {
-                $.get("/logout", function (data) {
+            $("#logout").click(function(){
+                $.get("/logout", function(data){
                     if (data["result"] == "True")
                         window.location.href = "login.html";
                     else

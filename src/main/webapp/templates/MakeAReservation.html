@@ -50,6 +50,7 @@
     </style>
 
     <script>
+
         function searchTools() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
@@ -120,6 +121,7 @@
             $("#leaseOneTool").click(function(){
                 var toolID = $("#saveToolID").val();
                 var quantity = $("#quantityOfThisTool").val();
+                $.ajaxSettings.async = false;//default synchronization
                 $.get("/confirmReservingTools",
                         {
                             inputID: toolID
@@ -129,10 +131,10 @@
                             console.log(data);
                             if (data["result"] == "True"){
                                 $("#"+toolID).remove();
-                                /* $("#leaseOneTool").attr({
+                                $("#leaseOneTool").attr({
                                     "data-toggle": "modal",
                                     "data-dismiss": "modal"
-                                }); */
+                                });
                             }
                             else{
                                 alert("Leasing procedure failed!");

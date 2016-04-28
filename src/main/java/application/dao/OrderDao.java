@@ -20,4 +20,7 @@ public interface OrderDao extends CrudRepository<Order, Integer> {
 
     @Query("select o from Order o where ( o.dutyEngineerID is null or o.dutyEngineerID = ?1 ) and  ( o.managerID is not null ) ")
     List<Order> engineerQuery(String engineerID);
+
+    @Query("select o from Order o where ( o.value = 'High' ) and ( o.toolkeeperID = ?1 or o.toolkeeperID is null ) ")
+    List<Order> toolKeeperQuery(String toolKeeperID);
 }

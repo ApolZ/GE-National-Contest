@@ -48,10 +48,9 @@
                     var response=JSON.parse(sendID.responseText);
                     //var info=JSON.parse(response);
 
-                    var info=response["Error"];
                    // console.log(info);
                    // window.alert(info)//for test
-                    if(info==null) {
+                    if(response.result=="True") {
                         $(document).ready(function () {
                             $(".picture img").attr("src", response["picture"]);
                             if (response["position"]) {
