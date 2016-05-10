@@ -196,30 +196,41 @@ public class DefualtController {
         return toolDto;
     }
 
-    /*根据toolID返回Tool*/
+    /*根据toolID返回Tool and its amount*/
     @RequestMapping(value = "/accurateDescription", method = RequestMethod.GET)
-    public Tool accurateDescription (String inputID) {
+    public ToolNumberDto accurateDescription (String inputID) {
         System.out.println("Finding a tool information");
         Tool tool = toolDao.findByToolID(inputID);
-        return tool;
+        Integer goodNumber = toolDao.countExactStatus("Good",tool.getName());
+        ToolNumberDto toolNumberDto = new ToolNumberDto();
+        toolNumberDto.setToolNumber(goodNumber.toString());
+        toolNumberDto.setDescription(tool.getDescription());
+        toolNumberDto.setPicture(tool.getPicture());
+        toolNumberDto.setToolID(tool.getToolID());
+        toolNumberDto.setName(tool.getName());
+        return toolNumberDto;
     }
 
     /*将该tool加入当前订单*/
     @RequestMapping(value = "/confirmReservingTools", method = RequestMethod.GET)
-    public ResultDto confirmReservingTools (String inputID, HttpServletRequest request) {
+    public ResultDto confirmReservingTools (String inputID, String quantity, HttpServletRequest request) {
         System.out.println("Confirming Reservation");
-        Tool tool = toolDao.findByToolID(inputID);
-        tool.setStatus("OnUsing");
-        toolDao.save(tool);
+        Tool inputTool = toolDao.findByToolID(inputID);
+        List<Tool> allTheGoods = toolDao.findGoodToolByName(inputTool.getName());
+        List<Tool> toolList = allTheGoods.subList(0,Integer.parseInt(quantity));
         HttpSession session = request.getSession();
         String orderID = (String) session.getAttribute("orderID");
         Order order = orderDao.findByOrderID(orderID);
         String currentTools = order.getToolsReservationID();
-        if (currentTools == null) {
-            currentTools = inputID;
-        } else {
-            currentTools += "|";
-            currentTools += inputID;
+        for (Tool tool: toolList) {
+            tool.setStatus("OnUsing");
+            toolDao.save(tool);
+            if (currentTools == null) {
+                currentTools = inputID;
+            } else {
+                currentTools += "|";
+                currentTools += tool.getToolID();
+            }
         }
         order.setToolsReservationID(currentTools);
         orderDao.save(order);
@@ -329,14 +340,16 @@ public class DefualtController {
         return toolDto;
     }
 
+    /*low value: Engineer do it by himself*/
     @RequestMapping(value = "/engineerReturnTools", method = RequestMethod.GET)
     public ResultDto engineerReturnTools (String returnStatus, String toolID) {
         System.out.println("Executing engineerReturnTools");
         Tool tool = toolDao.findByToolID(toolID);
         if ("Lost".equals(returnStatus) || "Broken".equals(returnStatus)) {
             tool.setBrokenOrLostDate(sysDate());
+        } else {
+            tool.setStatus("Good");
         }
-        tool.setStatus(returnStatus);
         toolDao.save(tool);
         return new ResultDto("True");
     }
@@ -448,6 +461,7 @@ public class DefualtController {
             return scanDto;
     }
 
+    /*Borrow all the tools scaned in session and clear session*/
     @RequestMapping(value = "/confirmBorrowTools", method = RequestMethod.GET)
     public ResultDto confirmBorrowTools (HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -471,6 +485,7 @@ public class DefualtController {
                 onsite.setToolID(str);
                 onsiteDao.save(onsite);
             }
+            session.setAttribute("scanTools",null);
             return new ResultDto("True");
         } catch (Exception e) {
             return new ResultDto("False");
@@ -514,15 +529,25 @@ public class DefualtController {
 
     @RequestMapping(value = "/toolsReturn", method = RequestMethod.GET)
     public ResultDto toolsReturn (String returnStatus, String toolID, String remarks) {
-        Onsite onsite = onsiteDao.unreturnedRowByToolID(toolID);
-        if (! "Return".equals(returnStatus)) {
-            remarks = remarks.replace('+',' ');
-            onsite.setRemarks(remarks);
+
+        try {
+            Onsite onsite = onsiteDao.unreturnedRowByToolID(toolID);
+            if (! "Return".equals(returnStatus)) {
+                remarks = remarks.replace('+',' ');
+                onsite.setRemarks(remarks);
+                Tool tool = toolDao.findByToolID(toolID);
+                tool.setStatus(returnStatus);
+                toolDao.save(tool);
+            }
+            onsite.setReturnStatus(returnStatus);
+            onsite.setReturnTime(sysTime());
+            onsiteDao.save(onsite);
+
+            return new ResultDto("True");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResultDto("False");
         }
-        onsite.setReturnStatus(returnStatus);
-        onsite.setReturnTime(sysTime());
-        onsiteDao.save(onsite);
-        return new ResultDto("True");
     }
 
     @RequestMapping(value = "/keeperFinish", method = RequestMethod.GET)
@@ -531,6 +556,15 @@ public class DefualtController {
         HttpSession session = request.getSession();
         String orderID = (String) session.getAttribute("orderID");
         Order order = orderDao.findByOrderID(orderID);
+        String tools = order.getToolsReservationID();
+        String[] toolArray = tools.split("\\|");
+        for (String str : toolArray) {
+            Tool tool = toolDao.findByToolID(str);
+            if ("OnUsing".equals(tool.getStatus())) {
+                tool.setStatus("Good");
+                toolDao.save(tool);
+            }
+        }
         order.setTaskEndTime(sysTime());
         order.setTaskStatus(result);
         orderDao.save(order);

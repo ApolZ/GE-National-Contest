@@ -44,5 +44,6 @@ public interface ToolDao extends CrudRepository<Tool, Integer> {
     @Query("select t from Tool t where t.status = 'Lost' and t.brokenOrLostDate like %?1%")
     List<Tool> findLostToolForGivenYear(String year);
 
-
+    @Query("select t from Tool t where t.status = 'Good' and t.name = ?1")
+    List<Tool> findGoodToolByName(String name);
 }

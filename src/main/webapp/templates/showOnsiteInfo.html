@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../static/css/global.css" />
     <script src="../static/js/jquery.min.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
+
     <style>
         #mainframe{
             margin-left:20%;
@@ -16,15 +17,48 @@
         #orderInfo{
             height: 500px;
             width:100%;
-            padding:3%;
+            /*padding:2%;*/
+            padding: 0;
             overflow: scroll;
-            border: solid gray 2px;
-            background-color: rgb(210, 219, 211);
+            border: solid lightgray 2px;
+            background-color: #ffffff;
         }
-
+        .page-header{
+            font-family: Open Sans,sans-serif;
+            text-align: center;
+            color: rgb(92, 65, 61);
+            border-bottom: none;
+        }
+        .statics{
+            color: #204d74;
+            display: block;
+            font: normal 18px "Century Gothic",Verdana,sans-serif;
+            padding: 0px 6px 10px 0px;
+            font-weight: bold;
+        }
+        .statics span b{
+            color: #761c19;
+        }
+        th,td{
+            text-align: center;
+        }
+        .remarks{
+            text-align: left;
+        }
     </style>
 
     <script>
+        $(document).ready(function() {
+            $("#logout").click(function () {
+                $.get("/logout", function (data) {
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
         function loadOnsiteInfo() {
             $(document).ready(function () {
                 $.getJSON("/currentOrderOnsiteInfo",function (data) {
@@ -34,6 +68,7 @@
                         $("#keeperID").text(data.toolkeeperID);
                         $("#boxID").text(data.toolboxID);
                         $("#onsiteAddress").text(data.address);
+                        var tableBody = $('<tbody></tbody>');
                         var numberOfList=data.list.length;
                         for(var i=0;i<numberOfList;i++)
                         {
@@ -43,20 +78,21 @@
                             var tdLendingTime=$('<td></td>').text(data.list[i].lendingTime);
                             var tdReturnTime=$('<td></td>').text(data.list[i].returnTime);
                             var tdReturnStatus=$('<td></td>').text(data.list[i].returnStatus);
-                            var tdRemarks=$('<td></td>').text(data.list[i].remarks);
+                            var tdRemarks=$('<td class="remarks"></td>').text(data.list[i].remarks);
                             newRow.append(tdEngineerID);
                             newRow.append(tdToolID);
                             newRow.append(tdLendingTime);
                             newRow.append(tdReturnTime);
                             newRow.append(tdReturnStatus);
                             newRow.append(tdRemarks);
+                            tableBody.append(newRow);
 
-                            $("#infoTable").append(newRow);
                         }
+                        $("#infoTable").append(tableBody);
                     }
                     else
                     {
-                        var noResult=$("<p></p>").text("No result found!");
+                        var noResult=$("<p class='text-center' style='font-weight: bold; font-size: large'></p>").text("No result found!");
                         $("#orderInfo").append(noResult);
                     }
                 })
@@ -67,28 +103,40 @@
 </head>
 <body onload="loadOnsiteInfo()">
 
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
 <div id="mainframe">
-    <h4>Onsite Information of Current Order</h4>
-    <span>Current Order ID: <span id="orderID"></span></span>
-    <br/>
-    <span>Tool keeper ID: <span id="keeperID"></span></span>
-    <span>Tool box ID: <span id="boxID"></span></span>
-    <br/>
-    <span>Address: <span id="onsiteAddress"></span></span>
-    <br/><br/>
+    <h1 class="page-header">Onsite Information of Current Order</h1><br />
+    <div class="statics">
+        <span>Current Order ID: <b id="orderID"></b></span>
+        <br/>
+        <span>Tool keeper ID: <b id="keeperID"></b></span>
+        <span>; Tool box ID: <b id="boxID"></b></span>
+        <br/>
+        <span>Address: <b id="onsiteAddress"></b></span>
+        <br/><br />
+    </div>
 
     <div id="orderInfo">
-        <table border="1" id="infoTable">
-            <tr>
-                <td>Engineer ID</td>
-                <td>Tool ID</td>
-                <td>Lending Time</td>
-                <td>Return Time</td>
-                <td>Return Status</td>
-                <td>Remarks</td>
+        <table id="infoTable" class="table table-hover table-striped">
+            <thead>
+            <tr class="success">
+                <th style="min-width: 100px">Engineer ID</th>
+                <th style="min-width: 70px">Tool ID</th>
+                <th style="min-width: 110px">Lending Time</th>
+                <th style="min-width: 100px">Return Time</th>
+                <th style="min-width: 110px">Return Status</th>
+                <th>Remarks</th>
             </tr>
+            </thead>
         </table>
     </div>
+    <br />
 </div>
 
 </body>

@@ -47,7 +47,7 @@
                 $.getJSON("/currentOrder",function (data) {
                     if(data.result=="True")
                     {
-                        var eleID=$("<p></p>").text("Service ID: "+data.OrderID);
+                        var eleID=$("<p></p>").text("Service ID: "+data.orderID);
                         var eleDateTime=$("<p></p>").text("Reservation Time: "+data.onsiteTime);
                         var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
                         var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);

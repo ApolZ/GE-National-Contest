@@ -51,10 +51,11 @@
 
     <script>
 
+        var currentToolStorage=0;
         function searchTools() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
-                $.getJSON("/searchTools",{key:searchKey},function (data) {
+                $.getJSON("/searchToolsForRegister",{key:searchKey},function (data) {
                     if(data.result=="True") {
                         $("div.pictures").empty();
                         var numberOfTools = data.tools.length;
@@ -86,6 +87,8 @@
                     console.log(data);
                     $("#toolDescription").text(data["description"]);
                     $("#toolPic").attr("src", data["picture"]);
+                    $("#currentStorage").text(data.toolNumber);
+                    currentToolStorage=data.toolNumber;
                 });
             });
         }
@@ -105,7 +108,7 @@
             });
 
             $("#minusOne").click(function(){
-                var currentuuantity = $("#quantityOfThisTool").val();
+                var currentQuantity = $("#quantityOfThisTool").val();
                 if (currentQuantity != 0) {
                     currentQuantity--;
                     $("#quantityOfThisTool").val(currentQuantity);
@@ -121,11 +124,16 @@
             $("#leaseOneTool").click(function(){
                 var toolID = $("#saveToolID").val();
                 var quantity = $("#quantityOfThisTool").val();
+                if(!(quantity<=currentToolStorage))
+                {
+                    alert("No enough inventory!");
+                    return;
+                }
                 $.ajaxSettings.async = false;//default synchronization
                 $.get("/confirmReservingTools",
                         {
-                            inputID: toolID
-                            //quantity: quantity,
+                            inputID: toolID,
+                            quantity: quantity,
                         },
                         function(data){
                             console.log(data);
@@ -270,19 +278,22 @@
             <div class="modal-body" style="margin: 0 10%">
                 <div class="form-horizontal">
                     <div class="form-group">
-                        <label class="col-md-4 control-label" style="display:none">Please select quantity:</label>
+                        <label class="col-md-8 control-label">Current number of Inventory: <span id="currentStorage"></span></label>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Please select quantity:</label>
                         <div class="col-md-8">
                             <div class="col-md-3">
-                                <button class="btn btn-default center-block" id="minusOne" style="display: none;">
+                                <button class="btn btn-default center-block" id="minusOne">
                                     <span class="glyphicon glyphicon-minus"></span>
                                 </button>
                             </div>
                             <div class="col-md-5">
                                 <input type="text" class="form-control center-block text-center" id="quantityOfThisTool"
-                                       value=1 autocomplete="on" style="display: none;"/>
+                                       value=1 autocomplete="on"/>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-default center-block" id="plusOne" style="display: none;">
+                                <button class="btn btn-default center-block" id="plusOne">
                                     <span class="glyphicon glyphicon-plus"></span>
                                 </button>
                             </div>
