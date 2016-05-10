@@ -52,8 +52,8 @@
 
     <script>
         $(document).ready(function() {
-            $("#logout").click(function(){
-                $.get("/logout", function(data){
+            $("#logout").click(function () {
+                $.get("/logout", function (data) {
                     if (data["result"] == "True")
                         window.location.href = "login.html";
                     else
@@ -65,16 +65,16 @@
         function searchTools() {
             $(document).ready(function () {
                 var searchKey=$("#SearchKey").val();
-                $.getJSON("/searchTools",{key:searchKey},function (data) {
-                    if(data.Error=="") {
-                        var numberOfTools = data.engineers.length;
+                $.getJSON("/searchToolsForRegister",{key:searchKey},function (data) {
+                    if(data.result=="True") {
+                        var numberOfTools = data.tools.length;
                         if (numberOfTools == 0) {
                             alert("some error occurs in the informaion returned by server!");
                         }
                         for (var i = 0; i < numberOfTools; i++) {
                             var eleme=$('<div class="innerPictures text-center" onclick="picOnclick(this)"' +
                                     'id="'+data.tools[i].toolID+'" data-toggle="modal" data-target="#toolDetail" style="cursor: pointer">' +
-                                    '<img src="'+data.tools[i].qddress+'" height="80px" class="center-block"/>' +
+                                    '<img src="'+data.tools[i].picture+'" height="80px" class="center-block"/>' +
                                     '<b>' + data.tools[i].name + '</b></div>');
                             $("div.pictures").append(eleme);
                         }
@@ -104,7 +104,7 @@
                 });
             });
         }
-        
+
         function showToolsOverview() {
             $(document).ready(function () {
                 $.getJSON("/toolsOverview",function (data) {
@@ -122,7 +122,7 @@
         }
     </script>
 </head>
-<body onclick="showToolsOverview()">
+<body onload="showToolsOverview()">
 
 <div class="header">
     <a class="logo" href="http://www.baidu.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">

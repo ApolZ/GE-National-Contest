@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>showOnsiteInfo</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <style>
+        #mainframe{
+            margin-left:20%;
+            margin-right: 20%;
+        }
+        #orderInfo{
+            height: 500px;
+            width:100%;
+            padding:3%;
+            overflow: scroll;
+            border: solid gray 2px;
+            background-color: rgb(210, 219, 211);
+        }
+
+    </style>
+
+    <script>
+        function loadOnsiteInfo() {
+            $(document).ready(function () {
+                $.getJSON("/currentOrderOnsiteInfo",function (data) {
+                    if(data.result=="True")
+                    {
+                        $("#orderID").text(data.orderID);
+                        $("#keeperID").text(data.toolkeeperID);
+                        $("#boxID").text(data.toolboxID);
+                        $("#onsiteAddress").text(data.address);
+                        var numberOfList=data.list.length;
+                        for(var i=0;i<numberOfList;i++)
+                        {
+                            var newRow=$('<tr></tr>');
+                            var tdEngineerID=$('<td></td>').text(data.list[i].engineerID);
+                            var tdToolID=$('<td></td>').text(data.list[i].toolID);
+                            var tdLendingTime=$('<td></td>').text(data.list[i].lendingTime);
+                            var tdReturnTime=$('<td></td>').text(data.list[i].returnTime);
+                            var tdReturnStatus=$('<td></td>').text(data.list[i].returnStatus);
+                            var tdRemarks=$('<td></td>').text(data.list[i].remarks);
+                            newRow.append(tdEngineerID);
+                            newRow.append(tdToolID);
+                            newRow.append(tdLendingTime);
+                            newRow.append(tdReturnTime);
+                            newRow.append(tdReturnStatus);
+                            newRow.append(tdRemarks);
+
+                            $("#infoTable").append(newRow);
+                        }
+                    }
+                    else
+                    {
+                        var noResult=$("<p></p>").text("No result found!");
+                        $("#orderInfo").append(noResult);
+                    }
+                })
+            })
+        }
+    </script>
+
+</head>
+<body onload="loadOnsiteInfo()">
+
+<div id="mainframe">
+    <h4>Onsite Information of Current Order</h4>
+    <span>Current Order ID: <span id="orderID"></span></span>
+    <br/>
+    <span>Tool keeper ID: <span id="keeperID"></span></span>
+    <span>Tool box ID: <span id="boxID"></span></span>
+    <br/>
+    <span>Address: <span id="onsiteAddress"></span></span>
+    <br/><br/>
+
+    <div id="orderInfo">
+        <table border="1" id="infoTable">
+            <tr>
+                <td>Engineer ID</td>
+                <td>Tool ID</td>
+                <td>Lending Time</td>
+                <td>Return Time</td>
+                <td>Return Status</td>
+                <td>Remarks</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

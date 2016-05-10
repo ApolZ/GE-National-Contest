@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>checkLoss</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" ahref="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
     <script src="../static/js/jquery.min.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
 
@@ -12,13 +15,44 @@
             margin-right:20%;
             padding: 30px;}
         #lossInfo{
-            margin-left: 20px;
-            margin-right:20px;
+            margin-left: 50px;
+            margin-right:50px;
             padding: 5px;
+        }
+        .page-header{
+            font-family: Open Sans,sans-serif;
+            text-align: center;
+            color: rgb(92, 65, 61);
+        }
+        #result{
+            font: normal 24px "Century Gothic",Verdana,sans-serif;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #999999;
+        }
+        .statics{
+            color: #204d74;
+            display: block;
+            font: normal 18px "Century Gothic",Verdana,sans-serif;
+            padding: 0px 6px 3px 30px;
+            font-weight: bold;
+        }
+        .statics li b{
+            color: #761c19;
         }
     </style>
 
     <script>
+        $(document).ready(function() {
+            $("#logout").click(function () {
+                $.get("/logout", function (data) {
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
         function checkYearLoss() {
             var checkYear=$("#checkYear").val();
             if(!(!isNaN(checkYear)&&(parseInt(checkYear)==checkYear))){alert("please put in a year");}
@@ -33,10 +67,59 @@
                 })
             }
         }
+        /*function checkYearLoss() {
+//            var checkYear=$("#checkYear").val();
+            var lossPieces = 13;
+            var lossValue = 56;
+            var brokenPieces = 42;
+            var brokenValue = 16;
+            var lostPieces = 81;
+            var lostValue = 30;
+            $("#totalLossPieces").text(lossPieces);
+            $("#totalLossValue").text(lossValue);
+            $("#totalBrokenPieces").text(brokenPieces);
+            $("#totalBrokenValue").text(brokenValue);
+            $("#totalLostPieces").text(lostPieces);
+            $("#totalLostValue").text(lostValue);
+        }*/
     </script>
 </head>
 <body>
+
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
 <div id="mainframe">
+    <h1 class="page-header">Please enter a year you want to check !</h1>
+    <br />
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" id="checkYear" placeholder="Please enter a year"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-info" type="button" id="searchYear" onclick="checkYearLoss()">SEARCH</button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <br/><br /><br/>
+    <div id="lossInfo">
+        <h1 id="result">In this year,</h1>
+        <ul class="statics">
+            <li>total number of loss: <b id="totalLossPieces"></b> , value: <b id="totalLossValue"></b></li>
+            <li>total number of broken: <b id="totalBrokenPieces"></b> , value: <b id="totalBrokenValue"></b></li>
+            <li>total number of Lost: <b id="totalLostPieces"></b> , value: <b id="totalLostValue"></b></li>
+        </ul>
+    </div>
+</div>
+
+
+
+<!--<div id="mainframe">
     <label>Please enter a year you want to check: </label>
     <input id="checkYear" placeholder="please enter a year"/> <br/>
     <button id="searchYear" onclick="checkYearLoss()">SEARCH</button>
@@ -59,6 +142,7 @@
         <label> value: </label>
         <b id="totalLostValue"></b>
     </div>
-</div>
+</div>-->
+
 </body>
 </html>

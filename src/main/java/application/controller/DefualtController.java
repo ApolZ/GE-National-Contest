@@ -35,6 +35,8 @@ public class DefualtController {
     ToolboxDao toolboxDao;
     @Autowired
     OnsiteDao onsiteDao;
+    @Autowired
+    ParameterDao parameterDao;
 
     private String sysTime() {
         Date date = new Date();
@@ -273,6 +275,8 @@ public class DefualtController {
         HttpSession session = request.getSession();
         String orderID = (String) session.getAttribute("orderID");
         Order order = orderDao.findByOrderID(orderID);
+        Parameter parameter = parameterDao.findOne(1);
+        Integer threshold = Integer.parseInt(parameter.getThreshold());
         String tools = order.getToolsReservationID();
         String[] toolArray = tools.split("\\|");
         Integer totalAmount = 0;
@@ -281,7 +285,7 @@ public class DefualtController {
             totalAmount += Integer.parseInt(tool.getPrice());
         }
         System.out.println("Total amount of this tools is: "+totalAmount);
-        if (totalAmount >= 100 ) {
+        if (totalAmount >= threshold ) {
             order.setValue("High");
             orderDao.save(order);
             return "{\"value\":\"High\"}";
@@ -554,5 +558,154 @@ public class DefualtController {
         HttpSession session = request.getSession();
         session.invalidate();
         return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/setNewThreshold", method = RequestMethod.GET)
+    public ResultDto setNewThreshold (String threshold) {
+        try {
+            Parameter parameter = parameterDao.findOne(1);
+            parameter.setThreshold(threshold);
+            parameterDao.save(parameter);
+        } catch (Exception e) {
+            return new ResultDto("False");
+        }
+        return new ResultDto("True");
+    }
+
+    /*search distinct kind of tools*/
+    @RequestMapping(value = "/searchToolsForRegister", method = RequestMethod.GET)
+    public ToolDto searchToolsForRegister (String key) {
+        System.out.println("Executing searchToolsForRegister");
+        List<Tool> tools = new ArrayList<Tool>();
+        tools = toolDao.keyQueryWithSingleName(key);
+        ToolDto toolDto = new ToolDto();
+        toolDto.setResult("True");
+        toolDto.setTools(tools);
+        return toolDto;
+    }
+
+    @RequestMapping(value = "/loadAddingToolInfo", method = RequestMethod.GET)
+    public Tool loadAddingToolInfo (String inputID) {
+        Tool tool = toolDao.findByToolID(inputID);
+        tool.setPurchaseDate(sysTime());
+        return tool;
+    }
+
+    /*Creating several tools at one time*/
+    @RequestMapping(value = "/createNewTools", method = RequestMethod.GET)
+    public ResultDto createNewTools (String name, String purchaseDate, String serviceLife, String description, String toolcenterID, String minQuant, String price, String number) {
+        System.out.println("Creating "+number +" "+ name);
+        try {
+            List<Tool> toolList = toolDao.findByName(name);
+            Long toolID = 0L;
+            for (Tool tool: toolList) {
+                if (Long.parseLong(tool.getToolID())>toolID) {
+                    toolID = Long.parseLong(tool.getToolID());
+                }
+            }
+            for (int i=0;i<Integer.parseInt(number);i++) {
+                Tool tool = new Tool();
+                toolID += 1;
+                tool.setToolID(toolID.toString());
+                tool.setName(name);
+                tool.setPurchaseDate(purchaseDate);
+                tool.setServiceLife(serviceLife);
+                tool.setPicture(toolList.get(0).getPicture());
+                tool.setStatus("Good");
+                tool.setDescription(description);
+                tool.setToolcenterID(toolcenterID);
+                tool.setMinQuant(minQuant);
+                tool.setPrice(price);
+                toolDao.save(tool);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResultDto("False");
+        }
+        return new ResultDto("True");
+    }
+
+    @RequestMapping(value = "/toolsOverview", method = RequestMethod.GET)
+    public ToolStorageDto toolsOverview () {
+        ToolStorageDto toolStorageDto = new ToolStorageDto();
+        toolStorageDto.setTotalNumber(toolDao.countTotalNumber().toString());
+        //goodNumber is the sum of Good and OnUsing
+        Integer goodNumber = 0;
+        goodNumber += toolDao.countExactStatus("Good");
+        goodNumber += toolDao.countExactStatus("OnUsing");
+        toolStorageDto.setGoodNumber(goodNumber.toString());
+        toolStorageDto.setBrokenNumber(toolDao.countExactStatus("Broken").toString());
+        toolStorageDto.setLostNumber(toolDao.countExactStatus("Lost").toString());
+        return toolStorageDto;
+    }
+
+    /*Storage details of a kind of tools*/
+    @RequestMapping(value = "/showDetailedToolStorage", method = RequestMethod.POST)
+    public ToolStorageDto showDetailedToolStorage (String toolID) {
+        Tool tool = toolDao.findByToolID(toolID);
+        String toolName = tool.getName();
+        ToolStorageDto toolStorageDto = new ToolStorageDto();
+        toolStorageDto.setPicture(tool.getPicture());
+        toolStorageDto.setDescription(tool.getDescription());
+        toolStorageDto.setPrice(tool.getPrice());
+        toolStorageDto.setTotalNumber(toolDao.countTotalNumber(toolName).toString());
+        //goodNumber is the sum of Good and OnUsing
+        Integer goodNumber = 0;
+        goodNumber += toolDao.countExactStatus("Good",toolName);
+        goodNumber += toolDao.countExactStatus("OnUsing",toolName);
+        toolStorageDto.setGoodNumber(goodNumber.toString());
+        toolStorageDto.setBrokenNumber(toolDao.countExactStatus("Broken",toolName).toString());
+        toolStorageDto.setLostNumber(toolDao.countExactStatus("Lost",toolName).toString());
+        return toolStorageDto;
+    }
+
+    /*check the loss statistic of given year */
+    @RequestMapping(value = "/chenYearLoss", method = RequestMethod.GET)
+    public YearStatisticsDto yearStatistics (String year) {
+        YearStatisticsDto yearStatisticsDto = new YearStatisticsDto();
+        List<Tool> brokenList =toolDao.findbrokenToolForGivenYear(year);
+        List<Tool> lostList = toolDao.findLostToolForGivenYear(year);
+        Integer brokenValue = 0;
+        Integer brokenAmount =brokenList.size();
+        Integer lostValue = 0;
+        Integer lostAmount = lostList.size();
+        for (Tool tool : brokenList) {
+            brokenValue += Integer.parseInt( tool.getPrice());
+        }
+        for (Tool tool : lostList) {
+            lostValue += Integer.parseInt( tool.getPrice());
+        }
+        Integer lossAmount = brokenAmount + lostAmount;
+        Integer lossValue = brokenValue + lostValue;
+        yearStatisticsDto.setBrokenPieces(brokenAmount.toString());
+        yearStatisticsDto.setBrokenValue(brokenValue.toString());
+        yearStatisticsDto.setLostPieces(lostAmount.toString());
+        yearStatisticsDto.setLostValue(lostValue.toString());
+        yearStatisticsDto.setLossPieces(lossAmount.toString());
+        yearStatisticsDto.setLossValue(lossValue.toString());
+        return yearStatisticsDto;
+    }
+
+    @RequestMapping(value = "/currentOrderOnsiteInfo", method = RequestMethod.GET)
+    public OnsiteInfoDto currentOrderOnsiteInfo (HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        String orderID = (String) session.getAttribute("orderID");
+        List<Onsite> onsiteList = onsiteDao.findByOrderID(orderID);
+        Onsite eg = onsiteList.get(0);
+        OnsiteInfoDto onsiteInfoDto = new OnsiteInfoDto();
+        onsiteInfoDto.setOrderID(orderID);
+        onsiteInfoDto.setAddress(eg.getAddress());
+        onsiteInfoDto.setToolboxID(eg.getToolboxID());
+        onsiteInfoDto.setToolkeeperID(eg.getToolkeeperID());
+        onsiteInfoDto.setList(onsiteList);
+        onsiteInfoDto.setResult("True");
+        return onsiteInfoDto;
+    }
+
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public Integer test () {
+        List<Tool> toolList = toolDao.findbrokenToolForGivenYear("2016");
+        return toolList.size();
     }
 }

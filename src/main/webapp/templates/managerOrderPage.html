@@ -34,7 +34,7 @@
         $(document).ready(function(){
             $("#logout").click(function(){
                 $.get("/logout", function(data){
-                    if (data["result"] == "True")
+                    if (data.result == "True")
                         window.location.href = "login.html";
                     else
                         alert("Failed to log out!");
@@ -52,7 +52,7 @@
                         var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
                         var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
                         var eleDes=$("<p></p>").text("Problem Description: "+data.description);
-                        var eleRes=$("<p></p>").text(data.reservationTime+": The client has made a request");
+                        var eleRes=$("<p></p>").text(data.ReservationTime+": The client made the request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 
@@ -77,7 +77,7 @@
                             $Orderinfo.append(eleEnAcc);
                         }
 
-                        if(data.value==""){return;}
+                        if(!data.value){return;}
                         else
                         {
                             if(data.value=="High"){
@@ -96,7 +96,7 @@
                                 return;
                             }
                             else {
-                                var eleKeeAcc = $("<p></p>").text(data.KeeperConfirmTime + ": Toolkeeper has accepted the task.");
+                                var eleKeeAcc = $("<p></p>").text(data.keeperConfirmTime + ": Toolkeeper has accepted the task.");
                                 $Orderinfo.append(eleKeeAcc);
                             }
                         }
@@ -154,9 +154,8 @@
         function confirmAcceptRequest() {
             $(document).ready(function () {
                 var confirmation=confirm("Accept the request?");
-                if (confirmation)
+                if(confirmation)
                 {
-                    console.log("in if sentence");
                     $.getJSON("/managerConfirmAccept",function (data) {
                         if(data.result=="True"){history.go(0);}
                         else
@@ -167,17 +166,12 @@
         }
 
         function backToManagerPersonCenter() {
+//            window.location.href="managerPersonalCenter.html";
             window.location.href="managerPersonalCenter.html";
         }
 
         function checkDetailedOnsiteInfo() {
-            $.getJSON("/onsiteInfoToExcel",function (data) {
-                if(data.result!="True"){
-                    alert("some error occurs");
-                } else {
-
-                }
-            });
+            window.location.href = "showOnsiteInfo.html";
         }
 
 
@@ -208,7 +202,7 @@
 
     </div>
     <br/>
-    <button id="onsiteInfo" onclick="checkDetailedOnsiteInfo()" style="display: none;">Check Onsite Operating Information(EXCEL)</button>
+    <button id="onsiteInfo" onclick="checkDetailedOnsiteInfo()" style="display: none;">Check Onsite Operating Information</button>
 </div>
 
 </body>

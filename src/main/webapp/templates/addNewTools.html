@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>addNewTools</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/logo.ico" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/css/global.css" />
     <script src="../static/js/jquery.min.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
 
@@ -16,35 +19,49 @@
             margin-right:20px;
             padding: 5px;
         }
+        .page-header{
+            font-family: Open Sans,sans-serif;
+            color: rgb(92, 65, 61);
+        }
     </style>
 
     <script>
-        
+        $(document).ready(function() {
+            $("#logout").click(function () {
+                $.get("/logout", function (data) {
+                    if (data["result"] == "True")
+                        window.location.href = "login.html";
+                    else
+                        alert("Failed to log out!");
+                });
+            });
+        });
+
         function loadToolInfo() {
             $(document).ready(function () {
                 var webInfo=window.location.search;
                 var toolID=webInfo.substr(1);
                 $.getJSON("/loadAddingToolInfo",{inputID:toolID},function (data) {
                     $("#picture").attr("src",data.picture);
-                    $("#toolName").attr("placeholder",data.name);
-                    $("#buyingDate").attr("placeholder",data.purchaseDate);
-                    $("#serviceLife").attr("placeholder",data.serviceLife);
-                    $("#description").attr("placeholder",data.description);
-                    $("#centerID").attr("placeholder",data.toolcenterID);
-                    $("#minQuant").attr("placeholder",data.minQuant);
-                    $("#price").attr("placeholder",data.price);
+                    $("#toolName").attr("value",data.name);
+                    $("#buyingDate").attr("value",data.purchaseDate);
+                    $("#serviceLife").attr("value",data.serviceLife);
+                    $("#description").attr("value",data.description);
+                    $("#centerID").attr("value",data.toolcenterID);
+                    $("#minQuant").attr("value",data.minQuant);
+                    $("#price").attr("value",data.price);
                 })
             });
         }
-        
+
         function updateNewTools() {
             var numbers=$("#newToolNumber").val();
             if(!(!isNaN(numbers)&&(parseInt(numbers)==numbers))){alert("please put in an integer as the number of new tools");}
             else
             {
-                $.getJSON("/creatNewTools",{
+                $.getJSON("/createNewTools",{
                     name:$("#toolName").val(),
-                    picture:$("#picture").val(),
+                    //picture:$("#picture").val(),
                     purchaseDate:$("#buyingDate").val(),
                     serviceLife:$("#serviceLife").val(),
                     description:$("#description").val(),
@@ -53,31 +70,89 @@
                     price:$("#price").val(),
                     number:numbers
                 },function (data) {
-                    if(data=="True"){alert("You have successfully added new tools!");}
+                    if(data.result=="True"){alert("You have successfully added new tools!");}
                     else{alert("some error occurs");}
                 })
             }
         }
     </script>
 
-
 </head>
 <body onload="loadToolInfo()">
 
-<div id="mainframe">
-    <h2>Add new tools...</h2>
-    <div id="toolInfo">
-        <img id="picture" height="200px" src="a.png"/> <br/>
-        <label>Name: </label> <input type="text" id="toolName"/> <br/>
-        <label>Purchase Date:</label> <input type="text" id="buyingDate"/> <br/>
-        <label>Service Life: </label> <input type="text" id="serviceLife"/> <br/>
-        <label>Description: </label> <input type="text" id="description"/> <br/>
-        <label>Tool Center ID: </label> <input type="text" id="centerID"/> <br/>
-        <label>Minimum Quantity: </label> <input type="text" id="minQuant"/> <br/>
-        <label>Price: </label><input type="text" id="price"/> <br/>
+<div class="header">
+    <a class="logo" href="http://www.ge.com"><img src="../static/images/logo.png" width="40" height="40" alt="logo">
+        <span>GE Store</span>
+    </a>
+    <a class="btn btn-link logout" id="logout"><b>Logout</b></a>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h2 class="page-header"><b>Add new tools...</b></h2>
+        </div>
     </div>
-    <label>Number of new Tools: </label><input type="text" id="newToolNumber" placeholder="1"/><br/>
-    <button id="updateTools" onclick="updateNewTools()">Add New Tool</button>
+</div>
+
+<div id="mainframe">
+    <div id="toolInfo">
+        <div class="row">
+            <div class="col-md-12">
+                <img id="picture" src="../static/images/tool/t8.jpg" class="center-block" style="max-width: 400px"/>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <label>Name: </label>
+                <input type="text" id="toolName" class="form-control" tabindex="1" autofocus="autofocus" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Purchase Date:</label>
+                <input type="text" id="buyingDate" class="form-control" tabindex="2" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Service Life: </label>
+                <input type="text" id="serviceLife" class="form-control" tabindex="3" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Description: </label>
+                <input type="text" id="description" class="form-control" tabindex="4" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Tool Center ID: </label>
+                <input type="text" id="centerID" class="form-control" tabindex="5" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Minimum Quantity: </label>
+                <input type="text" id="minQuant" class="form-control" tabindex="6" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Price: </label>
+                <input type="text" id="price" class="form-control" tabindex="7" /><br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Number of new Tools: </label>
+                <input type="text" id="newToolNumber" class="form-control" value="1" tabindex="8" /><br /><br />
+            </div>
+        </div>
+    </div>
+    <button id="updateTools" onclick="updateNewTools()" class="btn btn-info center-block btn-lg">Add New Tool</button>
 </div>
 
 </body>
