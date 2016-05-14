@@ -78,7 +78,11 @@
                             var tdLendingTime=$('<td></td>').text(data.list[i].lendingTime);
                             var tdReturnTime=$('<td></td>').text(data.list[i].returnTime);
                             var tdReturnStatus=$('<td></td>').text(data.list[i].returnStatus);
-                            var tdRemarks=$('<td class="remarks"></td>').text(data.list[i].remarks);
+                            var rem = data.list[i].remarks;
+                            if (rem == null|| rem == "null" || rem == "\"null\"" ) {
+                                rem = "N/A";
+                            }
+                            var tdRemarks=$('<td class="remarks"></td>').text(rem);
                             newRow.append(tdEngineerID);
                             newRow.append(tdToolID);
                             newRow.append(tdLendingTime);

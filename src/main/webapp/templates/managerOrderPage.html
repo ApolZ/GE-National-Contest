@@ -52,7 +52,7 @@
                         var eleLocation=$("<p></p>").text("Reservation Location: "+data.location);
                         var eleTitle=$("<p></p>").text("Reason for Reservation: "+data.title);
                         var eleDes=$("<p></p>").text("Problem Description: "+data.description);
-                        var eleRes=$("<p></p>").text(data.ReservationTime+": The client made the request");
+                        var eleRes=$("<p></p>").text(data.reservationTime+": The client made the request");
                         var $Orderinfo=$("#orderInfo");
                         $Orderinfo.append(eleID,eleDateTime,eleLocation,eleTitle,eleDes,eleRes);
 

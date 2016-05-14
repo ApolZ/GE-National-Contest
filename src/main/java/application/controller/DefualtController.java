@@ -347,6 +347,7 @@ public class DefualtController {
         Tool tool = toolDao.findByToolID(toolID);
         if ("Lost".equals(returnStatus) || "Broken".equals(returnStatus)) {
             tool.setBrokenOrLostDate(sysDate());
+            tool.setStatus(returnStatus);
         } else {
             tool.setStatus("Good");
         }
@@ -533,7 +534,7 @@ public class DefualtController {
         try {
             Onsite onsite = onsiteDao.unreturnedRowByToolID(toolID);
             if (! "Return".equals(returnStatus)) {
-                remarks = remarks.replace('+',' ');
+//                remarks = remarks.replace('+',' ');
                 onsite.setRemarks(remarks);
                 Tool tool = toolDao.findByToolID(toolID);
                 tool.setStatus(returnStatus);

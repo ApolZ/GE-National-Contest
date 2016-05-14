@@ -82,7 +82,7 @@
                         if(!data.value){return;}
 
                         if(data.value=="High") {
-                            if (data.keeperConfirmTime == "") {
+                            if (!data.keeperConfirmTime) {
                                 return;
                             }
                             else {
